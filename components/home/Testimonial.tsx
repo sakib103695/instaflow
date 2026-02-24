@@ -1,13 +1,9 @@
 import React from "react";
-import imgEllipse1 from "@/assets/images/testimonial-person1.png";
-import imgEllipse2 from "@/assets/images/testimonial-person2.png";
-import imgEllipse3 from "@/assets/images/testimonial-person3.png";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/pagination";
-import leftSvg from "@/assets/icons/left.svg";
-import rightSvg from "@/assets/icons/right.svg";
+const AVATAR1_SRC = "/assets/images/testimonial-person1.png";
+const AVATAR2_SRC = "/assets/images/testimonial-person2.png";
+const AVATAR3_SRC = "/assets/images/testimonial-person3.png";
+const LEFT_ICON_SRC = "/assets/icons/left.svg";
+const RIGHT_ICON_SRC = "/assets/icons/right.svg";
 
 type Testimonial = {
   name: string;
@@ -81,25 +77,25 @@ function TestimonialCard({
 
 const testimonials: Testimonial[] = [
   {
-    avatar: imgEllipse3,
-    name: "Mrs. Van Hartmann",
-    title: "Legacy Usability Manager",
+    avatar: AVATAR3_SRC,
+    name: "Mrs. Vanita",
+    title: "Clinic Operations Lead",
     text:
-      "InstaFlow completely transformed how we manage incoming calls. We no longer miss bookings, response times improved dramatically, and confirmed appointments increased without hiring additional front desk staff.",
+      "We used to have one person juggling walk‑ins, phones, and follow‑ups. InstaFlow quietly took over the phone chaos, and now my team can actually look patients in the eye instead of staring at a ringing line.",
   },
   {
-    avatar: imgEllipse1,
-    name: "Mrs. Alex Doe",
-    title: "Legacy Usability Manager",
+    avatar: AVATAR1_SRC,
+    name: "Ms. Kitty",
+    title: "Practice Manager",
     text:
-      "InstaFlow completely transformed how we manage incoming calls. We no longer miss bookings, response times improved dramatically, and confirmed appointments increased without hiring additional front desk staff.",
+      "Our callers kept telling us they hated voicemail. With InstaFlow, someone “picks up” every time, even after hours. The tone feels warm and human, and our team just confirms the appointments in the morning.",
   },
   {
-    avatar: imgEllipse2,
-    name: "Mr John Kallu",
-    title: "Legacy Usability Manager",
+    avatar: AVATAR2_SRC,
+    name: "Mr Eugene",
+    title: "Founder Nanny Training",
     text:
-      "InstaFlow completely transformed how we manage incoming calls. We no longer miss bookings, response times improved dramatically, and confirmed appointments increased without hiring additional front desk staff.",
+      "I was skeptical an AI voice could sound this natural. Parents explain what they need, Instaflow gathers the details, and I get a clean summary with calls already booked into my calendar.",
   },
 ];
 
@@ -107,13 +103,13 @@ function Heading() {
   return (
     <div className="text-center pt-4 uppercase w-full">
       <p
-        className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa] text-[30px] lg:text-[40px] leading-[46.555px]"
+        className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa] text-[28px] lg:text-[40px] leading-[46.555px]"
         style={{ WebkitTextFillColor: "transparent" }}
       >
         Trusted by Growing 
       </p>
       <p
-        className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa] text-[30px] lg:text-[40.75px] leading-[46.555px]"
+        className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa] text-[28px] lg:text-[40.75px] leading-[46.555px]"
         style={{ WebkitTextFillColor: "transparent" }}
       >
         Businesses Worldwide
@@ -148,71 +144,28 @@ export const Testimonial = () => {
     >
       <div className="pb-20">
         <div className="flex justify-center items-center gap-3">
-          <img src={leftSvg} alt="" className="h-[30px] w-[80px] md:w-[100px] lg:w-[135px]" />
+          <img src={LEFT_ICON_SRC} alt="" className="h-[30px] w-[80px] md:w-[100px] lg:w-[135px]" />
           <p className="text-white uppercase tracking-[2px] text-[16px]">
             Testimonial
           </p>
-          <img src={rightSvg} alt="" className="h-[30px] w-[80px] md:w-[100px] lg:w-[135px]" />
+          <img src={RIGHT_ICON_SRC} alt="" className="h-[30px] w-[80px] md:w-[100px] lg:w-[135px]" />
         </div>
         <Heading />
       </div>
 
       <div className="max-w-6xl mx-auto px-4">
-        <Swiper
-          modules={[Autoplay, Pagination]}
-          spaceBetween={24}
-          loop={true}
-          autoplay={{
-            delay: 3000,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-          }}
-          pagination={{
-            el: ".custom-pagination",
-            clickable: true,
-          }}
-          breakpoints={{
-            0: { slidesPerView: 1 },
-            640: { slidesPerView: 1 },
-            768: { slidesPerView: 2 },
-            1024: { slidesPerView: 2 },
-          }}
-        >
+        <div className="grid gap-6 md:grid-cols-2">
           {testimonials.map((t, index) => (
-            <SwiperSlide key={`${t.name}-${index}`} className="!h-auto">
-              <TestimonialCard
-                avatar={t.avatar}
-                name={t.name}
-                title={t.title}
-                text={t.text}
-              />
-            </SwiperSlide>
+            <TestimonialCard
+              key={`${t.name}-${index}`}
+              avatar={t.avatar}
+              name={t.name}
+              title={t.title}
+              text={t.text}
+            />
           ))}
-        </Swiper>
-
-        {/* Custom Pagination BELOW cards */}
-        <div className="custom-pagination mt-10 flex justify-center items-center gap-3" />
+        </div>
       </div>
-
-      {/* Custom Pagination Styling */}
-      <style>{`
-        .custom-pagination .swiper-pagination-bullet {
-          width: 12px;
-          height: 12px;
-          border-radius: 9999px;
-          background: white;
-          border: 2px solid white;
-          opacity: 1;
-          transition: all 0.3s ease;
-        }
-
-        .custom-pagination .swiper-pagination-bullet-active {
-          background: #8b5cf6;
-          transform: scale(1.1);
-          box-shadow: 0 0 10px rgba(139, 92, 246, 0.6);
-          border: 2px solid #8b5cf6;
-        }
-      `}</style>
     </section>
   );
 }

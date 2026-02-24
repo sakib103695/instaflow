@@ -1,3 +1,4 @@
+"use client";
 import { AVAILABLE_VOICES } from '../constants';
 import { useVoiceAgent } from '../hooks/useVoiceAgent';
 import AudioVisualizer from './AudioVisualizer';
@@ -140,18 +141,21 @@ export default function VoiceDemo() {
       </div>
 
       {isActive && transcription.length > 0 && (
-        <div className="mt-16 pt-10 border-t border-white/5 text-left">
+        <div className="mt-16 pt-10 border-t border-white/5">
           <div className="space-y-4 max-h-60 overflow-y-auto pr-2 scrollbar-hide">
-            {transcription.map((line, idx) => (
+            {transcription.map((entry, idx) => (
               <div
                 key={idx}
                 className={`p-4 rounded-2xl border ${
-                  line.startsWith(selectedVoice.label)
-                    ? 'bg-violet-600/10 border-violet-500/20 ml-6'
-                    : 'bg-white/5 border-white/5 mr-6'
+                  entry.role === 'agent'
+                    ? 'bg-violet-600/10 border-violet-500/20 mr-6 text-left'
+                    : 'bg-white/10 border-white/20 ml-6 text-right'
                 }`}
               >
-                <p className="text-sm text-slate-300 font-medium leading-relaxed">{line}</p>
+                <p className="text-xs text-slate-400 font-semibold mb-1">
+                  {entry.role === 'agent' ? selectedVoice.label : 'You'}
+                </p>
+                <p className="text-sm text-slate-300 font-medium leading-relaxed">{entry.text}</p>
               </div>
             ))}
           </div>

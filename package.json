@@ -2,24 +2,28 @@
   "name": "instaflow---ai-voice-agent-demo",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.1.0",
     "@google/genai": "^1.40.0",
+    "antd": "^6.3.1",
     "lucide-react": "^0.575.0",
+    "mongodb": "^7.1.0",
+    "next": "^15.0.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-router-dom": "^7.13.0",
     "swiper": "^12.1.2"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "@types/react": "19.2.14",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "typescript": "~5.8.2"
   }
 }

@@ -1,5 +1,6 @@
-/** Fixed demo key (no env). For production, use a server-side proxy or inject at deploy. */
-export const GEMINI_API_KEY = 'AIzaSyC0Y5070LkKNy4iURdu5Z-rKz9yGooKJig';
+/** Gemini API key – set NEXT_PUBLIC_GEMINI_API_KEY in .env.local */
+export const GEMINI_API_KEY =
+  (typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_GEMINI_API_KEY : undefined) || '';
 
 /** Special marker the AI should include when it decides to end the call. */
 export const END_CALL_SIGNAL = '[END_CALL]';

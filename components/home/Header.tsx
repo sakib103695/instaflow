@@ -1,15 +1,26 @@
+"use client";
 import React, { useState } from "react";
 import { Menu, X } from "lucide-react";
-import svgPaths from "@/assets/data/svgPaths";
-import "../../styles/button.css"
+import svgPaths from "@/public/assets/data/svgPaths";
+import "../../styles/button.css";
 function Mic2() {
   return (
     <div className="relative shrink-0 size-[31px]">
       <svg className="block size-full" fill="none" viewBox="0 0 31 31">
         <g>
           <path d={svgPaths.p3ea94300} stroke="white" strokeWidth="1.98" />
-          <path d={svgPaths.p29e00940} stroke="white" strokeLinecap="round" strokeWidth="1.98" />
-          <path d={svgPaths.p3f7ddb80} stroke="white" strokeLinecap="round" strokeWidth="1.98" />
+          <path
+            d={svgPaths.p29e00940}
+            stroke="white"
+            strokeLinecap="round"
+            strokeWidth="1.98"
+          />
+          <path
+            d={svgPaths.p3f7ddb80}
+            stroke="white"
+            strokeLinecap="round"
+            strokeWidth="1.98"
+          />
         </g>
       </svg>
     </div>
@@ -69,7 +80,9 @@ function NavLinks({
             closeMenu();
           }}
           className={`text-left md:text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded px-1 py-0.5 transition-colors ${
-            id === "hero" ? "text-[#dadada] hover:text-white" : "text-[#7989a3] hover:text-white"
+            id === "hero"
+              ? "text-[#dadada] hover:text-white"
+              : "text-[#7989a3] hover:text-white"
           }`}
         >
           {label}

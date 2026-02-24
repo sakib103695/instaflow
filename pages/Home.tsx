@@ -1,11 +1,10 @@
 import { Frame130 } from "@/components/home/Frame130";
-import { BrandLogosSlider } from "@/components/home/BrandLogosSlider";
 import EffortlessGrowth from "@/components/home/EffortlessGrowth";
 import { Hero } from "@/components/home/Hero";
 import { Security } from "@/components/home/Security";
 import { SmartGrowth } from "@/components/home/SmartGrowth";
 import { WorkflowHeading } from "@/components/home/WorkflowHeading";
-import workflowSvg from "@/assets/images/workflow.svg";
+const WORKFLOW_SVG_SRC = "/assets/images/workflow.svg";
 import Footer from "@/components/Footer";
 import Header from "@/components/home/Header";
 import { Testimonial } from "@/components/home/Testimonial";
@@ -19,11 +18,10 @@ export default function Home() {
       <Security />
       <SmartGrowth />
       <Frame130 />
-      {/* <BrandLogosSlider /> */}
       <WorkflowHeading />
       <div className="relative pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6">
         <img
-          src={workflowSvg}
+          src={WORKFLOW_SVG_SRC}
           alt=""
           className="mx-auto w-full max-w-full sm:max-w-[571.714px]"
         />

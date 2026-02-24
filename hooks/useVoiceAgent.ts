@@ -3,14 +3,18 @@ import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import { GEMINI_API_KEY, INSTAFLOW_SYSTEM_INSTRUCTION, AVAILABLE_VOICES, END_CALL_SIGNAL, CALL_CONNECTED_CUE } from '../constants';
 import { decode, decodeAudioData, createBlob } from '../services/audioUtils';
 
+export type TranscriptEntry = { role: 'user' | 'agent'; text: string };
+
+const END_CALL_AUDIO_WAIT_MS = 8000; // max wait for last AI line to finish before ending
+
 export function useVoiceAgent() {
   const [isActive, setIsActive] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isAiSpeaking, setIsAiSpeaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [transcription, setTranscription] = useState<string[]>([]);
-  const [selectedVoice, setSelectedVoice] = useState(AVAILABLE_VOICES[0]);
+  const [transcription, setTranscription] = useState<TranscriptEntry[]>([]);
+  const [selectedVoiceState, setSelectedVoiceState] = useState(AVAILABLE_VOICES[0]);
 
   const audioContextInRef = useRef<AudioContext | null>(null);
   const audioContextOutRef = useRef<AudioContext | null>(null);
@@ -19,7 +23,59 @@ export function useVoiceAgent() {
   const nextStartTimeRef = useRef<number>(0);
   const streamRef = useRef<MediaStream | null>(null);
 
+  const transcriptionRef = useRef<TranscriptEntry[]>([]);
+  const selectedVoiceRef = useRef(AVAILABLE_VOICES[0]);
+  const startedAtRef = useRef<string | null>(null);
+  const endedAtRef = useRef<string | null>(null);
+  const hasSavedRef = useRef(false);
+  const pendingEndCallRef = useRef(false);
+  const endCallTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const selectedVoice = selectedVoiceState;
+
+  const setSelectedVoice = useCallback(
+    (voice: (typeof AVAILABLE_VOICES)[number]) => {
+      setSelectedVoiceState(voice);
+      selectedVoiceRef.current = voice;
+    },
+    [],
+  );
+
   const stopConversation = useCallback(() => {
+    // Capture a snapshot of the current conversation and save it once.
+    if (!hasSavedRef.current && typeof window !== 'undefined') {
+      const transcript = transcriptionRef.current;
+      if (Array.isArray(transcript) && transcript.length > 0) {
+        hasSavedRef.current = true;
+        const startedAt = startedAtRef.current;
+        const endedAt = new Date().toISOString();
+        endedAtRef.current = endedAt;
+
+        const voice = selectedVoiceRef.current;
+        const payload = {
+          transcript,
+          selectedVoice: voice
+            ? {
+                id: voice.id,
+                label: voice.label,
+              }
+            : null,
+          startedAt: startedAt ?? null,
+          endedAt,
+          meta: {},
+        };
+
+        // Fire and forget – no state updates here.
+        fetch('/api/conversations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }).catch((e) => {
+          console.error('Failed to save conversation', e);
+        });
+      }
+    }
+
     setIsActive(false);
     setIsConnecting(false);
     setIsAiSpeaking(false);
@@ -46,6 +102,11 @@ export function useVoiceAgent() {
     audioContextInRef.current = null;
     audioContextOutRef.current = null;
     nextStartTimeRef.current = 0;
+    pendingEndCallRef.current = false;
+    if (endCallTimeoutRef.current) {
+      clearTimeout(endCallTimeoutRef.current);
+      endCallTimeoutRef.current = null;
+    }
   }, []);
 
   const previewVoice = useCallback(async () => {
@@ -53,9 +114,11 @@ export function useVoiceAgent() {
     try {
       setIsPreviewing(true);
       const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+      // Frame as "speak this text" so the TTS model outputs audio only, not text.
+      const ttsPrompt = `Read aloud exactly, with no additions or changes: "${selectedVoice.previewText}"`;
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-preview-tts',
-        contents: [{ parts: [{ text: selectedVoice.previewText }] }],
+        contents: [{ parts: [{ text: ttsPrompt }] }],
         config: {
           responseModalities: [Modality.AUDIO],
           speechConfig: {
@@ -83,8 +146,27 @@ export function useVoiceAgent() {
     } catch (err: any) {
       console.error(err);
       const msg = err?.message || err?.toString?.() || 'Preview failed';
+
       setIsPreviewing(false);
-      setError(msg.includes('API') || msg.includes('401') ? 'Invalid or missing API key. Check .env.local' : msg);
+
+      if (
+        typeof msg === 'string' &&
+        msg.includes('Model tried to generate text, but it should only be used for TTS')
+      ) {
+        setError(
+          'Preview is temporarily unavailable due to a limitation in the Gemini TTS model. Live calls still work normally.',
+        );
+      } else if (msg.includes('RESOURCE_EXHAUSTED') || msg.includes('quota')) {
+        setError(
+          'You have exceeded your current Gemini API quota. Check your plan and billing details, or wait and try again later.',
+        );
+      } else if (msg.includes('401') || msg.toLowerCase().includes('api key')) {
+        setError(
+          'Invalid or missing API key. Make sure VITE_GEMINI_API_KEY is set in your .env or .env.local, then restart the dev server.',
+        );
+      } else {
+        setError(msg);
+      }
     }
   }, [isPreviewing, isActive, selectedVoice]);
 
@@ -92,7 +174,12 @@ export function useVoiceAgent() {
     try {
       setError(null);
       setTranscription([]);
+      transcriptionRef.current = [];
       setIsConnecting(true);
+
+      startedAtRef.current = new Date().toISOString();
+      endedAtRef.current = null;
+      hasSavedRef.current = false;
 
       if (!GEMINI_API_KEY || GEMINI_API_KEY.length < 10) {
         setError('Invalid or missing API key.');
@@ -121,6 +208,7 @@ export function useVoiceAgent() {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: selectedVoice.id as any } },
           },
           outputAudioTranscription: {},
+          inputAudioTranscription: {},
         },
         callbacks: {
           onopen: () => {
@@ -139,8 +227,19 @@ export function useVoiceAgent() {
             scriptProcessor.connect(inputCtx.destination);
           },
           onmessage: async (message: LiveServerMessage) => {
-            if (message.serverContent?.outputTranscription) {
-              let text = message.serverContent.outputTranscription.text;
+            const serverContent = message.serverContent as any;
+            if (serverContent?.inputTranscription?.text) {
+              const text = (serverContent.inputTranscription.text || '').trim();
+              if (text) {
+                setTranscription((prev) => {
+                  const next: TranscriptEntry[] = [...prev.slice(-20), { role: 'user', text }];
+                  transcriptionRef.current = next;
+                  return next;
+                });
+              }
+            }
+            if (serverContent?.outputTranscription) {
+              let text = serverContent.outputTranscription.text || '';
               let shouldEndCall = false;
 
               if (text.includes(END_CALL_SIGNAL)) {
@@ -148,13 +247,25 @@ export function useVoiceAgent() {
                 text = text.replace(END_CALL_SIGNAL, '').trim();
               }
 
-              setTranscription((prev) => [...prev.slice(-8), `${selectedVoice.label}: ${text}`]);
+              if (text) {
+                setTranscription((prev) => {
+                  const next: TranscriptEntry[] = [...prev.slice(-20), { role: 'agent', text }];
+                  transcriptionRef.current = next;
+                  return next;
+                });
+              }
 
               if (shouldEndCall) {
-                setTimeout(() => stopConversation(), 1000);
+                pendingEndCallRef.current = true;
+                if (endCallTimeoutRef.current) clearTimeout(endCallTimeoutRef.current);
+                endCallTimeoutRef.current = setTimeout(() => {
+                  endCallTimeoutRef.current = null;
+                  pendingEndCallRef.current = false;
+                  stopConversation();
+                }, END_CALL_AUDIO_WAIT_MS);
               }
             }
-            const base64Audio = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
+            const base64Audio = serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (base64Audio && outputCtx) {
               setIsAiSpeaking(true);
               nextStartTimeRef.current = Math.max(nextStartTimeRef.current, outputCtx.currentTime);
@@ -164,13 +275,23 @@ export function useVoiceAgent() {
               sourceNode.connect(outputCtx.destination);
               sourceNode.onended = () => {
                 sourcesRef.current.delete(sourceNode);
-                if (sourcesRef.current.size === 0) setIsAiSpeaking(false);
+                if (sourcesRef.current.size === 0) {
+                  setIsAiSpeaking(false);
+                  if (pendingEndCallRef.current) {
+                    pendingEndCallRef.current = false;
+                    if (endCallTimeoutRef.current) {
+                      clearTimeout(endCallTimeoutRef.current);
+                      endCallTimeoutRef.current = null;
+                    }
+                    stopConversation();
+                  }
+                }
               };
               sourceNode.start(nextStartTimeRef.current);
               nextStartTimeRef.current += audioBuffer.duration;
               sourcesRef.current.add(sourceNode);
             }
-            if (message.serverContent?.interrupted) {
+            if (serverContent?.interrupted) {
               for (const s of sourcesRef.current.values()) {
                 try {
                   s.stop();

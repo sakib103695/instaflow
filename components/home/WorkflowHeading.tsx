@@ -1,15 +1,15 @@
 import React from "react";
-import leftSvg from "@/assets/icons/left.svg";
-import rightSvg from "@/assets/icons/right.svg";
+const LEFT_ICON_SRC = "/assets/icons/left.svg";
+const RIGHT_ICON_SRC = "/assets/icons/right.svg";
 
 function Badge() {
   return (
     <div className="sm:flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-      <img src={leftSvg} alt="" className="h-[24px] mx-auto w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
+      <img src={LEFT_ICON_SRC} alt="" className="h-[24px] mx-auto w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
       <p className="text-white uppercase tracking-[2px] text-[12px] sm:text-[16px]">
         SEAMLESS CONNECTIONS
       </p>
-      <img src={rightSvg} alt="" className="h-[24px] mx-auto w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
+      <img src={RIGHT_ICON_SRC} alt="" className="h-[24px] mx-auto w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React from "react";
-import leftSvg from "@/assets/icons/left.svg";
-import rightSvg from "@/assets/icons/right.svg";
+const LEFT_ICON_SRC = "/assets/icons/left.svg";
+const RIGHT_ICON_SRC = "/assets/icons/right.svg";
 
 export default function EffortlessGrowth() {
   return (
@@ -33,11 +33,11 @@ export default function EffortlessGrowth() {
 
         <div className="flex flex-col items-center gap-6 sm:gap-8 relative z-10 py-8 sm:py-12 px-2 sm:px-0">
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-            <img src={leftSvg} alt="" className="h-[24px] w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
+            <img src={LEFT_ICON_SRC} alt="" className="h-[24px] w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
             <p className="text-white uppercase tracking-[2px] text-[11px] sm:text-[12px] md:text-[16px]">
               Effortless Appointment Growth
             </p>
-            <img src={rightSvg} alt="" className="h-[24px] w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
+            <img src={RIGHT_ICON_SRC} alt="" className="h-[24px] w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
           </div>
 
           <div className="text-center">

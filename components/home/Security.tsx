@@ -1,16 +1,24 @@
 import React from "react";
-import svgPaths from "@/assets/data/svgPaths";
-import leftSvg from "@/assets/icons/left.svg";
-import rightSvg from "@/assets/icons/right.svg";
+import svgPaths from "@/public/assets/data/svgPaths";
+const LEFT_ICON_SRC = "/assets/icons/left.svg";
+const RIGHT_ICON_SRC = "/assets/icons/right.svg";
 
 function Pill() {
   return (
     <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3">
-      <img src={leftSvg} alt="" className="h-[24px] w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
+      <img
+        src={LEFT_ICON_SRC}
+        alt=""
+        className="h-[24px] w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]"
+      />
       <p className="text-white uppercase tracking-[2px] text-[11px] sm:text-[12px] lg:text-[16px]">
         Effortless Appointment Growth
       </p>
-      <img src={rightSvg} alt="" className="h-[24px] w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
+      <img
+        src={RIGHT_ICON_SRC}
+        alt=""
+        className="h-[24px] w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]"
+      />
     </div>
   );
 }
@@ -44,11 +52,31 @@ function FeatureIcon({ children }: { children?: React.ReactNode }) {
 
 function StarsIcon() {
   return (
-    <svg className="block size-full" fill="none" viewBox="0 0 36 36" preserveAspectRatio="none">
+    <svg
+      className="block size-full"
+      fill="none"
+      viewBox="0 0 36 36"
+      preserveAspectRatio="none"
+    >
       <g>
-        <path d={svgPaths.pdba280} stroke="var(--stroke-0, #CFCFCF)" strokeLinejoin="round" strokeWidth="1.5" />
-        <path d={svgPaths.p5d3d100} stroke="var(--stroke-0, #CFCFCF)" strokeLinejoin="round" strokeWidth="1.5" />
-        <path d={svgPaths.p3c131f00} stroke="var(--stroke-0, #CFCFCF)" strokeLinejoin="round" strokeWidth="1.5" />
+        <path
+          d={svgPaths.pdba280}
+          stroke="var(--stroke-0, #CFCFCF)"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+        <path
+          d={svgPaths.p5d3d100}
+          stroke="var(--stroke-0, #CFCFCF)"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+        <path
+          d={svgPaths.p3c131f00}
+          stroke="var(--stroke-0, #CFCFCF)"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
       </g>
     </svg>
   );
@@ -56,10 +84,27 @@ function StarsIcon() {
 
 function CallRingingIcon() {
   return (
-    <svg className="block size-full" fill="none" viewBox="0 0 36 36" preserveAspectRatio="none">
+    <svg
+      className="block size-full"
+      fill="none"
+      viewBox="0 0 36 36"
+      preserveAspectRatio="none"
+    >
       <g>
-        <path d={svgPaths.p1acf0600} stroke="var(--stroke-0, #CFCFCF)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-        <path d={svgPaths.p288d080} stroke="var(--stroke-0, #CFCFCF)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+        <path
+          d={svgPaths.p1acf0600}
+          stroke="var(--stroke-0, #CFCFCF)"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+        <path
+          d={svgPaths.p288d080}
+          stroke="var(--stroke-0, #CFCFCF)"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
       </g>
     </svg>
   );
@@ -67,9 +112,19 @@ function CallRingingIcon() {
 
 function EarthIcon() {
   return (
-    <svg className="block size-full" fill="none" viewBox="0 0 36 36" preserveAspectRatio="none">
+    <svg
+      className="block size-full"
+      fill="none"
+      viewBox="0 0 36 36"
+      preserveAspectRatio="none"
+    >
       <g>
-        <path d={svgPaths.p19bfcd80} stroke="var(--stroke-0, #CFCFCF)" strokeLinejoin="round" strokeWidth="1.5" />
+        <path
+          d={svgPaths.p19bfcd80}
+          stroke="var(--stroke-0, #CFCFCF)"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
       </g>
     </svg>
   );
@@ -85,14 +140,14 @@ function FeatureCard({
   icon: React.ReactNode;
 }) {
   return (
-<div
-  className="relative rounded-[14px]
+    <div
+      className="relative rounded-[14px]
     p-6 sm:p-7 md:p-8
     w-full
     border-2 border-[#2a1550]
     bg-[radial-gradient(120%_120%_at_50%_50%,#25144a_0%,#1a0b2e_45%,#0e0618_100%)]
     shadow-[0_10px_28px_rgba(0,0,0,0.28),inset_0_0_20px_rgba(0,0,0,0.55)]"
->
+    >
       <div className="flex flex-col gap-[28px]">
         <FeatureIcon>{icon}</FeatureIcon>
         <div className="flex flex-col gap-[5px]">
@@ -113,7 +168,8 @@ function FeatureCard({
 
 export function Security() {
   return (
-    <section className="w-full relative overflow-hidden
+    <section
+      className="w-full relative overflow-hidden
           bg-[#0c0616]
           py-16 sm:py-20 md:py-28 px-4 sm:px-6
           after:content-['']
@@ -122,21 +178,22 @@ export function Security() {
           after:bg-gradient-to-r
           after:from-transparent
           after:via-purple-400
-          after:to-transparent  ">
-        <div className="max-w-7xl mx-auto">
-          <Pill />
-          <Heading />
-        </div>
+          after:to-transparent  "
+    >
+      <div className="max-w-7xl mx-auto">
+        <Pill />
+        <Heading />
+      </div>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0 py-6 sm:py-8 md:py-10 flex flex-col gap-[24px] sm:gap-[32px] md:gap-[44px]">
-      
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] sm:gap-[20px]">
           <FeatureCard
             title="Context Aware"
             description={
               <>
                 <p className="mb-0">{`Our agents understand nuance, `}</p>
-                <p>sarcasm, and intent, providing a genuinely human experience.</p>
+                <p>
+                  sarcasm, and intent, providing a genuinely human experience.
+                </p>
               </>
             }
             icon={<StarsIcon />}
@@ -145,7 +202,10 @@ export function Security() {
           <FeatureCard
             title="Instant Pickup"
             description={
-              <p>No robotic pauses. Handle unlimited concurrent calls with sub-second response times.</p>
+              <p>
+                No robotic pauses. Handle unlimited concurrent calls with
+                sub-second response times.
+              </p>
             }
             icon={<CallRingingIcon />}
           />
@@ -153,7 +213,10 @@ export function Security() {
           <FeatureCard
             title="Global Reach"
             description={
-              <p>Speak to customers in 50+ languages with localized cultural understanding and perfect accents.</p>
+              <p>
+                Speak to customers in 50+ languages with localized cultural
+                understanding and perfect accents.
+              </p>
             }
             icon={<EarthIcon />}
           />
