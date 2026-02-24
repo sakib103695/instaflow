@@ -1,0 +1,4 @@
+/* Continuous marquee-style scroll for Swiper freeMode */
+.swiper-free-mode > .swiper-wrapper {
+  transition-timing-function: linear !important;
+}

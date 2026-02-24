@@ -1,0 +1,58 @@
+/* Voice level bars animation (recording-app style) */
+@keyframes voice-bar {
+  0%,
+  100% {
+    transform: scaleY(0.4);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.animate-voice-bar {
+  animation: voice-bar 0.5s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+/* Subtle pulse on mic circle to encourage click */
+@keyframes mic-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(140, 33, 255, 0.35);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(140, 33, 255, 0);
+    transform: scale(1.02);
+  }
+}
+
+.animate-mic-pulse {
+  animation: mic-pulse 2s ease-in-out infinite;
+}
+
+/* Transcription area scrollbar – matches hero card (dark + purple) */
+.transcription-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(140, 33, 255, 0.6) rgba(255, 255, 255, 0.06);
+}
+
+.transcription-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.transcription-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+}
+
+.transcription-scroll::-webkit-scrollbar-thumb {
+  background: rgba(140, 33, 255, 0.6);
+  border-radius: 999px;
+}
+
+.transcription-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(140, 33, 255, 0.8);
+}

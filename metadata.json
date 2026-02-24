@@ -1,0 +1,8 @@
+
+{
+  "name": "InstaFlow - AI Voice Agent Demo",
+  "description": "Enterprise-grade AI voice automation for businesses. Experience real-time human-like conversations with InstaFlow.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
