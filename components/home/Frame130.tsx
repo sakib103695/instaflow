@@ -28,7 +28,7 @@ function Group52() {
       </p>
 
       <p
-        className="font-bold bg-gradient-to-b from-white to-[#bababa] bg-clip-text mx-auto"
+        className="font-bold mt-2 sm:mt-4 bg-gradient-to-b from-white to-[#bababa] bg-clip-text mx-auto"
         style={{ WebkitTextFillColor: "transparent" }}
       >
         Choose InstaFlow

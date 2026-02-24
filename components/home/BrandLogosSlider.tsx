@@ -20,12 +20,12 @@ import rightSvg from "@/assets/icons/right.svg";
 
 function HeadingBar() {
   return (
-    <div className="flex items-center justify-center gap-3">
-      <img src={leftSvg} alt="" className="h-[30px] w-[80px] md:w-[100px] lg:w-[135px]" />
-      <p className="text-white uppercase tracking-[2px] text-[12px] md:text-[16px]">
+    <div className="sm:flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+      <img src={leftSvg} alt="" className="h-[24px] sm:mx-0 mx-auto w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
+      <p className="text-white text-center uppercase tracking-[2px] text-[12px] sm:text-[16px]">
         Trusted by Over 500 Businesses
       </p>
-      <img src={rightSvg} alt="" className="h-[30px] w-[80px] md:w-[100px] lg:w-[135px]" />
+      <img src={rightSvg} alt="" className="h-[24px] sm:mx-0 mx-auto w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
     </div>
   );
 }

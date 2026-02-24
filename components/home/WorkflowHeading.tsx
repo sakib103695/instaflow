@@ -4,12 +4,12 @@ import rightSvg from "@/assets/icons/right.svg";
 
 function Badge() {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-      <img src={leftSvg} alt="" className="h-[24px] w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
+    <div className="sm:flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+      <img src={leftSvg} alt="" className="h-[24px] mx-auto w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
       <p className="text-white uppercase tracking-[2px] text-[12px] sm:text-[16px]">
         SEAMLESS CONNECTIONS
       </p>
-      <img src={rightSvg} alt="" className="h-[24px] w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
+      <img src={rightSvg} alt="" className="h-[24px] mx-auto w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
     </div>
   );
 }
@@ -24,7 +24,7 @@ function Heading() {
         Integrations That
       </p>
       <p
-        className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa] text-[20px] sm:text-[24px] md:text-[32px] lg:text-[40.75px] leading-tight md:leading-[46.555px]"
+        className="bg-clip-text mt-1 font-bold bg-gradient-to-b from-white to-[#bababa] text-[20px] sm:text-[24px] md:text-[32px] lg:text-[40.75px] leading-tight md:leading-[46.555px]"
         style={{ WebkitTextFillColor: "transparent" }}
       >
         Fit Your Workflow

@@ -52,7 +52,9 @@ function LeftPanel() {
       <h2 className="mt-3 sm:mt-4 font-['Grift:Medium',sans-serif] text-xl sm:text-2xl md:text-[32px] lg:text-[40px] leading-[1.05] font-bold text-white">
         SMARTER GROWTH
         <br />
+        <p className="mt-4">
         FOR WELLNESS
+        </p>
       </h2>
       <div className="mt-4 sm:mt-6 inline-flex relative items-center gap-2 sm:gap-3 rounded-[999px] bg-[#80808030] border border-white px-3 sm:px-4 py-2 lg:py-3">
         <div className="absolute left-1/2 -translate-x-1/2 w-[400px] h-[400px] rounded-full bg-[#8C21FF]/20 blur-[100px]" />

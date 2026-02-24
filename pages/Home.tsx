@@ -8,6 +8,7 @@ import { WorkflowHeading } from "@/components/home/WorkflowHeading";
 import workflowSvg from "@/assets/images/workflow.svg";
 import Footer from "@/components/Footer";
 import Header from "@/components/home/Header";
+import { Testimonial } from "@/components/home/Testimonial";
 
 export default function Home() {
   return (
@@ -18,7 +19,7 @@ export default function Home() {
       <Security />
       <SmartGrowth />
       <Frame130 />
-      <BrandLogosSlider />
+      {/* <BrandLogosSlider /> */}
       <WorkflowHeading />
       <div className="relative pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6">
         <img
@@ -29,6 +30,7 @@ export default function Home() {
         {/* Glow Background */}
         <div className="absolute top-[12%] left-1/2 -translate-x-1/2 w-[280px] h-[280px] sm:w-[400px] sm:h-[400px] md:w-[500px] md:h-[500px] rounded-full bg-[#8C21FF]/20 blur-[80px] sm:blur-[100px]" />
       </div>
+      <Testimonial/>
       <Footer />
     </div>
   );

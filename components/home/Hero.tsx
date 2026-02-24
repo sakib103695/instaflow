@@ -1,35 +1,23 @@
 import React from "react";
 import svgPaths from "@/assets/data/svgPaths";
-import usersImg from "@/assets/images/users.png";
+import usersImg from "@/assets/hero-images/hero-right-side-chat-reply-image.png";
+import usersImg2 from "@/assets/hero-images/hero-left-side-chatboat.png";
+import bgGradient from "@/assets/hero-images/hero-gradient.svg"
 import { MessageCircle, Mic } from "lucide-react";
 import { useVoiceAgent } from "@/hooks/useVoiceAgent";
 import { AVAILABLE_VOICES } from "@/constants";
 import "@/styles/hero.css";
-
+import dividerLine from "@/assets/icons/curved-line.svg"; 
+import playIcon from "@/assets/icons/play-icon.svg";
 /* ================= BACKGROUND LAYER: blur columns + starry ================= */
 function HeroBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Purple blur columns (from HeroBlurColumns) */}
-      <div className="absolute left-[10%] top-[-80px] w-[100px] h-[600px] rotate-[42deg] bg-[#7711e5] blur-[140px] rounded-b-[66px] opacity-90" />
-      <div className="absolute left-[18%] top-[-40px] w-[100px] h-[520px] rotate-[42deg] bg-[#cd9eff] blur-[150px] rounded-b-[66px] opacity-70" />
-      <div className="absolute left-[12%] top-[0] w-[100px] h-[500px] rotate-[42deg] bg-[#d9d9d9] blur-[160px] rounded-b-[66px] opacity-40" />
-      {/* Soft glow under card */}
-      <div className="absolute left-1/2 -translate-x-1/2 top-[55%] w-[400px] h-[300px] bg-[#8C21FF]/25 blur-[100px] rounded-full" />
-      {/* Subtle starry dots */}
-      <div className="absolute inset-0 opacity-60">
-        {[...Array(40)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-0.5 h-0.5 bg-white rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              opacity: 0.4 + Math.random() * 0.6,
-            }}
-          />
-        ))}
-      </div>
+      <img
+        src={bgGradient}
+        alt=""
+        className="w-full h-full object-cover xl:object-contain"
+      />
     </div>
   );
 }
@@ -38,12 +26,20 @@ function HeroBackground() {
 function HeroHeadline() {
   return (
     <div className="flex flex-col items-center gap-4 text-center max-w-[640px] px-4 relative z-10">
-      <h1 className="text-3xl sm:text-4xl md:text-[45px] font-bold leading-[1.1] text-white uppercase tracking-tight">
-        Every Call{" "}
-        <span className="bg-clip-text text-transparent bg-gradient-to-b from-[#f5ebff] to-[#ba79ff]">
-          Answered Instantly
-        </span>
-      </h1>
+    <div className="font-['Grift:Extra_Bold',sans-serif] mt-8 text-center not-italic text-[24px] sm:text-[38px] md:text-[42.755px] leading-[1.1] uppercase">
+      <p
+        className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa]"
+        style={{ WebkitTextFillColor: "transparent" }}
+      >
+        Every Call
+      </p>
+      <p
+        className="bg-clip-text mx-auto font-bold bg-gradient-to-b from-white to-[#bababa] w-full whitespace-pre-wrap"
+        style={{ WebkitTextFillColor: "transparent" }}
+      >
+       Answered <span className="bg-clip-text bg-gradient-to-b from-[#f5ebff] to-[#ba79ff] text-transparent">Instantly</span> 
+      </p>
+    </div>
       <p className="text-[#c8c8c8] text-sm sm:text-[15px] leading-relaxed max-w-[560px]">
         Scale your business with human-sounding AI voice agents. Pick up every
         lead, handle complex support, and never leave a customer hanging.
@@ -146,8 +142,13 @@ function HeroCard({
       <p className="text-center text-base sm:text-lg md:text-[22px] uppercase font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white to-[#8D23FF] relative z-10">
         Call & Test the AI Agent Now
       </p>
-      <div className="w-full h-px bg-white/10 relative z-10" />
-
+      <div className="relative z-10 w-full flex justify-center">
+        <img
+          src={dividerLine}
+          alt="divider"
+          className="w-full max-w-full opacity-80"
+        />
+      </div>
       {error && (
         <div className="rounded-xl bg-red-500/20 border border-red-500/40 px-4 py-2 text-red-200 text-sm relative z-10">
           {error}
@@ -183,11 +184,15 @@ function HeroCard({
             disabled={isActive || isConnecting || isPreviewing}
             className="shrink-0 bg-[#8c21ff] hover:bg-[#7a1ae6] disabled:opacity-50 rounded-lg h-10 px-5 flex items-center justify-center gap-2 transition-colors"
           >
-            {isPreviewing ? (
-              <span className="size-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <span className="w-3 h-3 rounded-full bg-white/90" />
-            )}
+          {isPreviewing ? (
+  <span className="size-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
+) : (
+  <img
+    src={playIcon}
+    alt="Play"
+    className="w-4 h-4 object-contain"
+  />
+)}
             <span className="text-white text-xs font-semibold uppercase tracking-wide">Preview</span>
           </button>
         </div>
@@ -211,7 +216,7 @@ function HeroCard({
         </button>
         {isActive ? <VoiceLevelBars isActive={true} /> : <VoiceBar />}
       </div>
-
+{/* 
       <div className="flex justify-center relative z-10">
         <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/10 text-[#c8c8c8] text-xs sm:text-sm">
           <svg className="size-[19px]" fill="none" viewBox="0 0 18.9 18.9">
@@ -222,7 +227,7 @@ function HeroCard({
           </svg>
           Business & Consulting
         </div>
-      </div>
+      </div> */}
 
       {!isActive ? (
         <button
@@ -276,23 +281,8 @@ function HeroCard({
 /* ================= LEFT: AI WELCOME BUBBLE ================= */
 function LeftBubble() {
   return (
-    <div className="absolute left-[5%] top-[42%] md:left-[8%] md:top-[38%] w-[240px] md:w-[260px] z-20 hidden lg:block">
-      <div className="relative rounded-2xl bg-gradient-to-b from-[#a450ff] to-[#c390f9] p-4 shadow-[0_42px_107px_rgba(197,122,255,0.35),0_0_0_1px_rgba(255,255,255,0.5)] border border-white/40">
-        <div className="absolute -left-2 top-6 w-4 h-4 rotate-45 bg-gradient-to-br from-[#a450ff] to-[#c390f9] border-l border-b border-white/30" />
-        <div className="flex items-start gap-3">
-          <div className="shrink-0 size-8 rounded-lg bg-white/20 flex items-center justify-center">
-            <Mic className="size-4 text-white" />
-          </div>
-          <div className="pt-0.5">
-            <p className="text-white text-[15px] leading-snug">
-              <span className="text-white/90">Hello, Welcome to </span>
-              <span className="font-medium">InstaFlow</span>
-            </p>
-            <p className="text-white text-[15px] leading-snug mt-0.5">How can I help you today?</p>
-          </div>
-        </div>
-      </div>
-      <div className="absolute -left-4 top-1/2 w-8 border-t border-dashed border-white/30" />
+    <div className="absolute left-[5%] top-[42%] md:left-[8%] md:top-[38%] w-[240px] md:w-[350px] z-20 hidden lg:block">
+       <img src={usersImg2} alt="" className="size-full object-cover" />
     </div>
   );
 }
@@ -300,21 +290,10 @@ function LeftBubble() {
 /* ================= RIGHT: USER BUBBLE ================= */
 function RightBubble() {
   return (
-    <div className="absolute right-[5%] top-[28%] md:right-[8%] md:top-[24%] w-[240px] md:w-[260px] z-20 hidden lg:block">
-      <div className="relative rounded-2xl bg-gradient-to-b from-[#a450ff] to-[#c390f9] p-4 shadow-[0_42px_107px_rgba(197,122,255,0.35),0_0_0_1px_rgba(255,255,255,0.5)] border border-white/40">
-        <div className="absolute -right-2 top-8 w-4 h-4 rotate-[225deg] bg-gradient-to-br from-[#a450ff] to-[#c390f9] border-l border-b border-white/30" />
-        <div className="flex items-start gap-3">
-          <div className="shrink-0 size-8 rounded-full bg-white/20 flex items-center justify-center overflow-hidden ring-2 ring-white/30">
+    <div className="absolute right-[5%] top-[28%] md:right-[8%] md:top-[24%] w-[240px] md:w-[350px] z-20 hidden lg:block">
+           
             <img src={usersImg} alt="" className="size-full object-cover" />
-          </div>
-          <div className="pt-0.5">
-            <p className="text-white text-[15px] leading-snug flex items-center gap-1.5">
-              <MessageCircle className="size-4 shrink-0 opacity-90" />
-              Yes, I want to book a Consultancy Meeting for X
-            </p>
-          </div>
-        </div>
-      </div>
+        
       <div className="absolute -right-4 top-1/2 w-8 border-t border-dashed border-white/30" />
     </div>
   );
@@ -336,7 +315,7 @@ export function Hero() {
   } = useVoiceAgent();
 
   return (
-    <section id="hero" className="relative w-full flex flex-col items-center pt-28 sm:pt-32 md:pt-36 lg:pt-40 pb-10 sm:pb-14 md:pb-20 px-4 sm:px-6 bg-[#0a0312] scroll-mt-24 sm:scroll-mt-28">
+    <section id="hero" className="relative w-full flex flex-col items-center pt-28 sm:pt-32 md:pt-36 lg:pt-40 pb-10 sm:pb-14 md:pb-20 px-4 sm:px-6 bg-[#0A0312] scroll-mt-24 sm:scroll-mt-28">
       <HeroBackground />
       <div className="relative z-10 flex flex-col items-center gap-10 w-full max-w-4xl">
         <HeroHeadline />
