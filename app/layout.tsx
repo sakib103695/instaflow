@@ -4,6 +4,11 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'InstaFlow | AI Voice Agents That Answer Every Call Instantly',
   description: 'Enterprise-grade AI voice automation for businesses.',
+  icons: {
+    icon: '/assets/round_logo.png',
+    shortcut: '/assets/round_logo.png',
+    apple: '/assets/round_logo.png',
+  },
 };
 
 export default function RootLayout({
