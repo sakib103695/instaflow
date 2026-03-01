@@ -1,9 +1,11 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import svgPaths from "@/public/assets/data/svgPaths";
 import { MessageCircle, Mic } from "lucide-react";
 import { useVoiceAgent } from "@/hooks/useVoiceAgent";
 import { AVAILABLE_VOICES } from "@/constants";
+
+const ROTATING_WORDS = ["Spa", "MedSpa", "Salon"];
 /* ================= BACKGROUND LAYER: blur columns + starry ================= */
 function HeroBackground() {
   return (
@@ -19,6 +21,15 @@ function HeroBackground() {
 
 /* ================= HERO TITLE + SUBTITLE ================= */
 function HeroHeadline() {
+  const [wordIndex, setWordIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setWordIndex((prev) => (prev + 1) % ROTATING_WORDS.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="flex flex-col items-center gap-4 text-center max-w-[640px] px-4 relative z-10">
       <div className="font-['Grift:Extra_Bold',sans-serif] mt-8 text-center not-italic text-[24px] sm:text-[38px] md:text-[42.755px] leading-[1.1] uppercase">
@@ -33,8 +44,12 @@ function HeroHeadline() {
           style={{ WebkitTextFillColor: "transparent" }}
         >
           Answered{" "}
-          <span className="bg-clip-text bg-gradient-to-b from-[#f5ebff] to-[#ba79ff] text-transparent">
-            Instantly
+          <span
+            key={wordIndex}
+            className="inline-block text-yellow-400 animate-fade-in"
+            style={{ WebkitTextFillColor: "initial" }}
+          >
+            {ROTATING_WORDS[wordIndex]}
           </span>
         </p>
       </div>
