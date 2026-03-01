@@ -101,7 +101,7 @@ export function SmartGrowth() {
   return (
     <section
       id="industries"
-      className="w-full px-4 sm:px-6 lg:px-0 max-w-7xl mx-auto pt-16 sm:pt-20 md:pt-28 lg:flex gap-6"
+      className="w-full px-4 sm:px-6 lg:px-0 max-w-7xl mx-auto py-16 sm:py-20 md:py-28 lg:flex gap-6"
     >
       <div className="lg:w-[40%] w-full">
         <LeftPanel />

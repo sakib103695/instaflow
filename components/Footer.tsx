@@ -25,15 +25,10 @@ export default function Footer() {
   return (
     <footer
       id="contact"
-      className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 border-t border-white/5 bg-[#05010a]"
+      className="relative pt-12 h-[120px] md:h-[200px] sm:h-[180px] lg:h-[320px] sm:pt-16 md:pt-20 px-4 sm:px-6 border-t border-white/5 bg-[#05010a] overflow-hidden"
     >
-      {/* Bottom row with links under logo on small screens */}
-      <div className="md:hidden">
-        <Frame184 />
-      </div>
-
-      {/* Large brand word strip under footer (from Instaflow design) */}
-      <div className="mt-10 w-full overflow-hidden">
+      {/* Large brand word strip under footer */}
+      <div className="absolute bottom-0 left-0 w-full">
         <p
           className="
             text-center
@@ -41,9 +36,9 @@ export default function Footer() {
             font-['Grift:Extra_Bold',sans-serif] 
             from-white/80 via-[#984de8] to-[rgba(42,20,77,0)]
             uppercase pointer-events-none select-none
-            text-[60px] sm:text-[160px] md:text-[200px] lg:text-[257px] 
-            leading-[1]
-            tracking-[1px] sm:tracking-[2px] md:tracking-[3px] lg:tracking-[3px]
+            text-[60px] sm:text-[160px] md:text-[200px] lg:text-[230px]
+            leading-[0.9]
+            tracking-[1px] sm:tracking-[2px] md:tracking-[3px]
             opacity-60
           "
           style={{ WebkitTextFillColor: "transparent" }}

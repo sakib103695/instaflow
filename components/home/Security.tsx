@@ -12,7 +12,7 @@ function Pill() {
         className="h-[24px] w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]"
       />
       <p className="text-white uppercase tracking-[2px] text-[11px] sm:text-[12px] lg:text-[16px]">
-        Effortless Appointment Growth
+        GROWS AS FAST AS YOU DO
       </p>
       <img
         src={RIGHT_ICON_SRC}

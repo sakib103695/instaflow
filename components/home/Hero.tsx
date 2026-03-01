@@ -39,19 +39,28 @@ function HeroHeadline() {
         >
           Every Call
         </p>
-        <p
-          className="bg-clip-text mx-auto font-bold bg-gradient-to-b from-white to-[#bababa] w-full whitespace-pre-wrap"
-          style={{ WebkitTextFillColor: "transparent" }}
-        >
-          Answered{" "}
-          <span
-            key={wordIndex}
-            className="inline-block text-yellow-400 animate-fade-in"
-            style={{ WebkitTextFillColor: "initial" }}
-          >
-            {ROTATING_WORDS[wordIndex]}
-          </span>
-        </p>
+     <p
+  className="bg-clip-text mx-auto text-center font-bold bg-gradient-to-b from-white to-[#bababa] w-full flex justify-center items-center gap-2"
+  style={{ WebkitTextFillColor: "transparent" }}
+>
+  <span>Answered</span>
+
+  <span className="relative inline-block h-[1.2em] w-[90px] lg:w-[110px]">
+    {ROTATING_WORDS.map((word, index) => (
+      <span
+        key={word}
+        className={`absolute text-center left-0 top-0 w-full text-yellow-400 transition-all duration-500 ease-in-out ${
+          index === wordIndex
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-6"
+        }`}
+        style={{ WebkitTextFillColor: "initial" }}
+      >
+        {word}
+      </span>
+    ))}
+  </span>
+</p>
       </div>
       <p className="text-[#c8c8c8] text-sm sm:text-[15px] leading-relaxed max-w-[560px]">
         Scale your business with human-sounding AI voice agents. Pick up every
@@ -343,7 +352,7 @@ function HeroCard({
 /* ================= LEFT: AI WELCOME BUBBLE ================= */
 function LeftBubble() {
   return (
-    <div className="absolute left-[5%] top-[42%] md:left-[8%] md:top-[38%] w-[240px] md:w-[350px] z-20 hidden lg:block">
+    <div className="absolute left-[5%] top-[42%]  md:top-[38%] w-[240px] md:w-[350px] z-20 hidden lg:block">
       <img
         src="/assets/hero-images/hero-left-side-chatboat.png"
         alt=""
@@ -356,14 +365,14 @@ function LeftBubble() {
 /* ================= RIGHT: USER BUBBLE ================= */
 function RightBubble() {
   return (
-    <div className="absolute right-[5%] top-[28%] md:right-[8%] md:top-[24%] w-[240px] md:w-[350px] z-20 hidden lg:block">
+    <div className="absolute right-[5%] top-[28%]  md:top-[24%] w-[240px] md:w-[350px] z-20 hidden lg:block">
       <img
-        src="/assets/hero-images/hero-right-side-chat-reply-image.png"
+        src="/assets/hero-images/human-reply.png"
         alt=""
         className="size-full object-cover"
       />
 
-      <div className="absolute -right-4 top-1/2 w-8 border-t border-dashed border-white/30" />
+      {/* <div className="absolute -right-4 top-1/2 w-8 border-t border-dashed border-white/30" /> */}
     </div>
   );
 }

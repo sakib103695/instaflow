@@ -1,6 +1,6 @@
 import React from "react";
 import svgPaths from "@/public/assets/data/svgPaths";
-const HIGHLIGHT_IMG_SRC = "/assets/images/56650cd4279c696bd8aa6eebc2c5127e30fe096a.png";
+const HIGHLIGHT_IMG_SRC = "/assets/images/conversation3.jpg";
 const LEFT_ICON_SRC = "/assets/icons/left.svg";
 const RIGHT_ICON_SRC = "/assets/icons/right.svg";
 function Frame134() {

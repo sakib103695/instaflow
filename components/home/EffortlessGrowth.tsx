@@ -41,13 +41,12 @@ export default function EffortlessGrowth() {
           </div>
 
           <div className="text-center">
-            <h3 className="max-w-5xl mx-auto font-['Raleway',sans-serif] font-semibold text-white text-base sm:text-lg md:text-[20px] lg:text-[28px] xl:text-[33.72px] leading-snug sm:leading-[1.4] md:leading-[40.9px]">
-              Your calendar fills itself automatically. Every call is answered
-              instantly, inquiries handled naturally, and appointments
-              confirmed in real time—no missed leads, no voicemail losses,{" "}
-              <span className="text-[#BBBBBB]">
+            <h3 className="max-w-4xl mx-auto font-['Raleway',sans-serif] font-semibold text-white text-base sm:text-lg md:text-[20px] lg:text-[28px] xl:text-[33.72px] leading-snug sm:leading-[1.4] md:leading-[40.9px]">
+            InstaFlow answers <span className="text-[#BBBBBB]">every call, handles the 
+conversation, and locks in appointments.</span>  Day or night, without you lifting a finger.
+              {/* <span className="text-[#BBBBBB]">
                 no staff overload. Just consistent bookings 24/7.
-              </span>
+              </span> */}
             </h3>
           </div>
 

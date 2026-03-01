@@ -1,9 +1,18 @@
+ "use client";
+
+
 import React from "react";
 const AVATAR1_SRC = "/assets/images/testimonial-person1.png";
 const AVATAR2_SRC = "/assets/images/testimonial-person2.png";
 const AVATAR3_SRC = "/assets/images/testimonial-person3.png";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
+
 const LEFT_ICON_SRC = "/assets/icons/left.svg";
 const RIGHT_ICON_SRC = "/assets/icons/right.svg";
+
 
 type Testimonial = {
   name: string;
@@ -78,38 +87,39 @@ function TestimonialCard({
 const testimonials: Testimonial[] = [
   {
     avatar: AVATAR3_SRC,
-    name: "Mrs. Vanita",
-    title: "Clinic Operations Lead",
+    name: "Mrs. Van Hartmann",
+    title: "Legacy Usability Manager",
     text:
-      "We used to have one person juggling walk‑ins, phones, and follow‑ups. InstaFlow quietly took over the phone chaos, and now my team can actually look patients in the eye instead of staring at a ringing line.",
+      "InstaFlow completely transformed how we manage incoming calls. We no longer miss bookings, response times improved dramatically, and confirmed appointments increased without hiring additional front desk staff.",
   },
   {
     avatar: AVATAR1_SRC,
-    name: "Ms. Kitty",
-    title: "Practice Manager",
+    name: "Mrs. Alex Doe",
+    title: "Legacy Usability Manager",
     text:
-      "Our callers kept telling us they hated voicemail. With InstaFlow, someone “picks up” every time, even after hours. The tone feels warm and human, and our team just confirms the appointments in the morning.",
+      "InstaFlow completely transformed how we manage incoming calls. We no longer miss bookings, response times improved dramatically, and confirmed appointments increased without hiring additional front desk staff.",
   },
   {
     avatar: AVATAR2_SRC,
-    name: "Mr Eugene",
-    title: "Founder Nanny Training",
+    name: "Mr John Kallu",
+    title: "Legacy Usability Manager",
     text:
-      "I was skeptical an AI voice could sound this natural. Parents explain what they need, Instaflow gathers the details, and I get a clean summary with calls already booked into my calendar.",
+      "InstaFlow completely transformed how we manage incoming calls. We no longer miss bookings, response times improved dramatically, and confirmed appointments increased without hiring additional front desk staff.",
   },
 ];
 
 function Heading() {
   return (
+    
     <div className="text-center pt-4 uppercase w-full">
       <p
-        className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa] text-[28px] lg:text-[40px] leading-[46.555px]"
+        className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa] text-[40px] leading-[46.555px]"
         style={{ WebkitTextFillColor: "transparent" }}
       >
         Trusted by Growing 
       </p>
       <p
-        className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa] text-[28px] lg:text-[40.75px] leading-[46.555px]"
+        className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa] text-[40.75px] leading-[46.555px]"
         style={{ WebkitTextFillColor: "transparent" }}
       >
         Businesses Worldwide
@@ -154,18 +164,61 @@ export const Testimonial = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4">
-        <div className="grid gap-6 md:grid-cols-2">
+        <Swiper
+          modules={[Autoplay, Pagination]}
+          spaceBetween={24}
+          loop={true}
+          autoplay={{
+            delay: 3000,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+          }}
+          pagination={{
+            el: ".custom-pagination",
+            clickable: true,
+          }}
+          breakpoints={{
+            0: { slidesPerView: 1 },
+            640: { slidesPerView: 1 },
+            768: { slidesPerView: 2 },
+            1024: { slidesPerView: 2 },
+          }}
+        >
           {testimonials.map((t, index) => (
-            <TestimonialCard
-              key={`${t.name}-${index}`}
-              avatar={t.avatar}
-              name={t.name}
-              title={t.title}
-              text={t.text}
-            />
+            <SwiperSlide key={`${t.name}-${index}`} className="!h-auto">
+              <TestimonialCard
+                avatar={t.avatar}
+                name={t.name}
+                title={t.title}
+                text={t.text}
+              />
+            </SwiperSlide>
           ))}
-        </div>
+        </Swiper>
+
+        {/* Custom Pagination BELOW cards */}
+        <div className="custom-pagination mt-10 flex justify-center items-center gap-3" />
       </div>
+
+      {/* Custom Pagination Styling */}
+      <style>{`
+        .custom-pagination .swiper-pagination-bullet {
+          width: 12px;
+          height: 12px;
+          border-radius: 9999px;
+          background: white;
+          border: 2px solid white;
+          opacity: 1;
+          transition: all 0.3s ease;
+        }
+
+        .custom-pagination .swiper-pagination-bullet-active {
+          background: #8b5cf6;
+          transform: scale(1.1);
+          box-shadow: 0 0 10px rgba(139, 92, 246, 0.6);
+          border: 2px solid #8b5cf6;
+        }
+      `}</style>
     </section>
   );
 }
