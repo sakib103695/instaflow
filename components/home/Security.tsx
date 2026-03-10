@@ -12,7 +12,7 @@ function Pill() {
         className="h-[24px] w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]"
       />
       <p className="text-white uppercase tracking-[2px] text-[11px] sm:text-[12px] lg:text-[16px]">
-        GROWS AS FAST AS YOU DO
+        Your New Receptionist Never Sleeps
       </p>
       <img
         src={RIGHT_ICON_SRC}
@@ -30,13 +30,13 @@ function Heading() {
         className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa]"
         style={{ WebkitTextFillColor: "transparent" }}
       >
-        scale and security
+        Answers Every Call
       </p>
       <p
         className="bg-clip-text mx-auto font-bold bg-gradient-to-b from-white to-[#bababa] w-full sm:w-[391px] whitespace-pre-wrap"
         style={{ WebkitTextFillColor: "transparent" }}
       >
-        Built for speed
+        Books In Real Time
       </p>
     </div>
   );
@@ -187,35 +187,33 @@ export function Security() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0 py-6 sm:py-8 md:py-10 flex flex-col gap-[24px] sm:gap-[32px] md:gap-[44px]">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] sm:gap-[20px]">
           <FeatureCard
-            title="Context Aware"
+            title="Answers Every Call"
             description={
-              <>
-                <p className="mb-0">{`Our agents understand nuance, `}</p>
-                <p>
-                  sarcasm, and intent, providing a genuinely human experience.
-                </p>
-              </>
+              <p>
+                No hold music, no voicemail. Callers are answered in seconds
+                with a natural, front-desk voice—day or night.
+              </p>
             }
             icon={<StarsIcon />}
           />
 
           <FeatureCard
-            title="Instant Pickup"
+            title="Books Into Your Calendar"
             description={
               <p>
-                No robotic pauses. Handle unlimited concurrent calls with
-                sub-second response times.
+                Understands what the caller wants, checks your availability, and
+                books the appointment into your system—no manual entry.
               </p>
             }
             icon={<CallRingingIcon />}
           />
 
           <FeatureCard
-            title="Global Reach"
+            title="Works 24/7"
             description={
               <p>
-                Speak to customers in 50+ languages with localized cultural
-                understanding and perfect accents.
+                Handles after-hours, weekends, and holidays so you and your team
+                can focus on clients in the chair or on the floor.
               </p>
             }
             icon={<EarthIcon />}

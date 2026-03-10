@@ -18,6 +18,7 @@ type Testimonial = {
   name: string;
   title: string;
   text: string;
+  highlight: string;
   avatar: string;
 };
 
@@ -53,11 +54,13 @@ function TestimonialCard({
   name,
   title,
   text,
+  highlight,
 }: {
   avatar: string;
   name: string;
   title: string;
   text: string;
+  highlight: string;
 }) {
   return (
     <article
@@ -75,6 +78,7 @@ function TestimonialCard({
         >
           {text}
         </p>
+        <p className="text-[#c7a6ff] text-[20px] font-bold">{highlight}</p>
 
         <div className="pt-4">
           <AvatarRow src={avatar} name={name} title={title} />
@@ -87,24 +91,27 @@ function TestimonialCard({
 const testimonials: Testimonial[] = [
   {
     avatar: AVATAR3_SRC,
-    name: "Mrs. Van Hartmann",
-    title: "Legacy Usability Manager",
+    name: "Marie T.",
+    title: "Owner, Eve-Dan Medi Spa, Laval",
     text:
-      "InstaFlow completely transformed how we manage incoming calls. We no longer miss bookings, response times improved dramatically, and confirmed appointments increased without hiring additional front desk staff.",
+      '"We were skeptical at first, but the results speak for themselves."',
+    highlight: "12 recovered bookings in month one",
   },
   {
     avatar: AVATAR1_SRC,
-    name: "Mrs. Alex Doe",
-    title: "Legacy Usability Manager",
+    name: "Lisa K.",
+    title: "Manager, Glow Skincare Clinic, Toronto",
     text:
-      "InstaFlow completely transformed how we manage incoming calls. We no longer miss bookings, response times improved dramatically, and confirmed appointments increased without hiring additional front desk staff.",
+      '"I called the demo myself before signing up. Couldn\'t tell it wasn\'t human."',
+    highlight: "95% of callers can’t tell it’s not human",
   },
   {
     avatar: AVATAR2_SRC,
-    name: "Mr John Kallu",
-    title: "Legacy Usability Manager",
+    name: "Sarah P.",
+    title: "Founder, Radiance Med Spa, Montreal",
     text:
-      "InstaFlow completely transformed how we manage incoming calls. We no longer miss bookings, response times improved dramatically, and confirmed appointments increased without hiring additional front desk staff.",
+      '"Finally stopped losing clients to voicemail after 6pm."',
+    highlight: "10-15 extra bookings every month",
   },
 ];
 
@@ -116,13 +123,13 @@ function Heading() {
         className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa] text-[40px] leading-[46.555px]"
         style={{ WebkitTextFillColor: "transparent" }}
       >
-        Trusted by Growing 
+        Real Businesses,
       </p>
       <p
         className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa] text-[40.75px] leading-[46.555px]"
         style={{ WebkitTextFillColor: "transparent" }}
       >
-        Businesses Worldwide
+        Real Results
       </p>
     </div>
   );
@@ -191,6 +198,7 @@ export const Testimonial = () => {
                 name={t.name}
                 title={t.title}
                 text={t.text}
+                highlight={t.highlight}
               />
             </SwiperSlide>
           ))}

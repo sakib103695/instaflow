@@ -97,14 +97,14 @@ function CTAButton({ closeMenu }: { closeMenu: () => void }) {
     <button
       type="button"
       onClick={() => {
-        scrollToSection("hero");
+        scrollToSection("calculator");
         closeMenu();
       }}
       className="cta-btn cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded-full"
     >
       <span className="cta-border">
         <span className="cta-content cursor-pointer px-6 py-2 md:py-2.5 uppercase text-white text-sm md:text-base">
-          Try Now
+          ROI Calculator
         </span>
       </span>
       <span className="cta-glow" />

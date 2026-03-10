@@ -12,7 +12,7 @@ function Frame134() {
         className="h-[30px] w-[80px] md:w-[100px] lg:w-[135px]"
       />
       <p className="text-white uppercase tracking-[2px] text-[11px] md:text-[16px]">
-        Why Choose Us
+        Booked In 60 Seconds
       </p>
       <img
         src={RIGHT_ICON_SRC}
@@ -30,14 +30,7 @@ function Group52() {
         className="font-bold bg-gradient-to-b from-white to-[#bababa] bg-clip-text"
         style={{ WebkitTextFillColor: "transparent" }}
       >
-        Why Growing Businesses
-      </p>
-
-      <p
-        className="font-bold mt-2 sm:mt-4 bg-gradient-to-b from-white to-[#bababa] bg-clip-text mx-auto"
-        style={{ WebkitTextFillColor: "transparent" }}
-      >
-        Choose InstaFlow
+        How It Works
       </p>
     </div>
   );
@@ -153,11 +146,11 @@ function Frame142() {
   return (
     <div className="content-stretch flex flex-col gap-[10px] items-start leading-[normal] not-italic relative shrink-0 text-white w-full max-w-[372px] whitespace-pre-wrap">
       <p className="font-['Grift:Bold',sans-serif] relative shrink-0 text-[15px] sm:text-[17.5px] uppercase w-full">
-        Instant Pickup, Zero Missed Leads
+        1. Customer Calls
       </p>
       <div className="font-['Grift:Medium',sans-serif] relative shrink-0 text-[13px] sm:text-[15px] w-full">
-        <p className="mb-0">{`Every caller gets answered in seconds, so you never `}</p>
-        <p>lose customers to voicemail, hold time, or closed hours.</p>
+        <p className="mb-0">Your business number rings and InstaFlow answers in</p>
+        <p>under 3 rings with a natural, professional greeting.</p>
       </div>
     </div>
   );
@@ -265,9 +258,12 @@ function Frame145() {
   return (
     <div className="content-stretch flex flex-col gap-[10px] items-start leading-[normal] not-italic relative shrink-0 text-white w-full max-w-[372px] whitespace-pre-wrap">
       <p className="font-['Grift:Bold',sans-serif] relative shrink-0 text-[15px] sm:text-[17.5px] uppercase w-full">
-        Natural Voice That Builds Trust
+        2. Appointment Booked
       </p>
-      <p className="font-['Grift:Medium',sans-serif] relative shrink-0 text-[13px] sm:text-[15px] w-full">{`Human-like tone and pacing make conversations feel real,increasing conversions and customer satisfaction. `}</p>
+      <p className="font-['Grift:Medium',sans-serif] relative shrink-0 text-[13px] sm:text-[15px] w-full">
+        It understands what they want, answers common questions, and books them
+        straight into your calendar—no callbacks or manual entry.
+      </p>
     </div>
   );
 }
@@ -352,11 +348,11 @@ function Frame148() {
   return (
     <div className="content-stretch flex flex-col gap-[10px] items-start leading-[normal] not-italic relative shrink-0 text-white w-full max-w-[372px] whitespace-pre-wrap">
       <p className="font-['Grift:Bold',sans-serif] relative shrink-0 text-[15px] sm:text-[17.5px] uppercase w-full">
-        Unlimited Calls Without Hiring Staff
+        3. Confirmed & Logged
       </p>
       <p className="font-['Grift:Medium',sans-serif] relative shrink-0 text-[13px] sm:text-[15px] w-full">
-        Handle high call volume effortlessly with concurrent conversations,
-        reducing costs while maintaining fast response times.
+        The caller gets a confirmation, and your team sees the full call and
+        booking in one place—ready for the appointment.
       </p>
     </div>
   );
@@ -387,8 +383,10 @@ function Frame138() {
   return (
     <div className="content-stretch flex flex-col gap-6 sm:gap-[36px] items-center relative shrink-0 w-full max-w-[464px]">
       <p className="font-['Grift:Medium',sans-serif] leading-snug not-italic relative shrink-0 text-[#aaa] text-sm sm:text-base md:text-[18.5px] w-full whitespace-pre-wrap">
-        <span className="leading-[normal] text-white">Instaflow</span>
-        <span className="leading-[normal]">{` answers every call instantly with natural AI voice agents. Book appointments, handle support, and capture every lead. Scale effortlessly without extra staff, delays, or missed opportunities.`}</span>
+        <span className="leading-[normal] text-white">
+          Setup in under 2 weeks.
+        </span>
+        <span className="leading-[normal]">{` No extra front-desk hiring, no retraining your team, and no missed high-intent calls.`}</span>
       </p>
       <Frame139 />
     </div>

@@ -7,7 +7,7 @@ function Badge() {
     <div className="sm:flex flex-wrap items-center justify-center gap-2 sm:gap-3">
       <img src={LEFT_ICON_SRC} alt="" className="h-[24px] mx-auto w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
       <p className="text-white uppercase tracking-[2px] text-[12px] sm:text-[16px]">
-        SEAMLESS CONNECTIONS
+        Pipeline & CRM Integrations
       </p>
       <img src={RIGHT_ICON_SRC} alt="" className="h-[24px] mx-auto w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
     </div>
@@ -21,13 +21,13 @@ function Heading() {
         className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa] text-[20px] sm:text-[24px] md:text-[32px] lg:text-[40px] leading-tight md:leading-[46.555px]"
         style={{ WebkitTextFillColor: "transparent" }}
       >
-        Integrations That
+        Connect Calls To
       </p>
       <p
         className="bg-clip-text mt-1 font-bold bg-gradient-to-b from-white to-[#bababa] text-[20px] sm:text-[24px] md:text-[32px] lg:text-[40.75px] leading-tight md:leading-[46.555px]"
         style={{ WebkitTextFillColor: "transparent" }}
       >
-        Fit Your Workflow
+        Booked Revenue
       </p>
     </div>
   );
@@ -42,9 +42,8 @@ export function WorkflowHeading() {
       </div>
 
       <p className="font-['Grift:Medium',sans-serif] text-base sm:text-lg leading-relaxed text-white max-w-[569px] px-2">
-        Connect Instaflow with your existing tools for payments, scheduling,
-        CRM, and social platforms. If there’s an open API, we’ll build and
-        manage the integration for you.
+        Every call syncs to your calendar and CRM so you see who called, what
+        they wanted, and when they’re booked—no leads slipping through the cracks.
       </p>
     </div>
   );

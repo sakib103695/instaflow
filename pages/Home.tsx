@@ -4,16 +4,21 @@ import { Hero } from "@/components/home/Hero";
 import { Security } from "@/components/home/Security";
 import { SmartGrowth } from "@/components/home/SmartGrowth";
 import { WorkflowHeading } from "@/components/home/WorkflowHeading";
+import RevenueCalculator from "@/components/home/RevenueCalculator";
+import ConversionProofStrip from "@/components/home/ConversionProofStrip";
 const WORKFLOW_SVG_SRC = "/assets/images/workflow.svg";
 import Footer from "@/components/Footer";
 import Header from "@/components/home/Header";
 import { Testimonial } from "@/components/home/Testimonial";
+import FinalCTA from "@/components/home/FinalCTA";
 
 export default function Home() {
   return (
     <div className="bg-black text-white">
       <Header />
       <Hero />
+      <ConversionProofStrip />
+      <RevenueCalculator />
       <EffortlessGrowth />
       <Security />
       <SmartGrowth />
@@ -29,6 +34,7 @@ export default function Home() {
         <div className="absolute top-[12%] left-1/2 -translate-x-1/2 w-[280px] h-[280px] sm:w-[400px] sm:h-[400px] md:w-[500px] md:h-[500px] rounded-full bg-[#8C21FF]/20 blur-[80px] sm:blur-[100px]" />
       </div>
       <Testimonial/>
+      <FinalCTA />
       <Footer />
     </div>
   );

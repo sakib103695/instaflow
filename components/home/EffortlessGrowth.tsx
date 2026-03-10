@@ -35,31 +35,32 @@ export default function EffortlessGrowth() {
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
             <img src={LEFT_ICON_SRC} alt="" className="h-[24px] w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
             <p className="text-white uppercase tracking-[2px] text-[11px] sm:text-[12px] md:text-[16px]">
-              Effortless Appointment Growth
+              Stop Losing Bookings to Voicemail
             </p>
             <img src={RIGHT_ICON_SRC} alt="" className="h-[24px] w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]" />
           </div>
 
           <div className="text-center">
             <h3 className="max-w-4xl mx-auto font-['Raleway',sans-serif] font-semibold text-white text-base sm:text-lg md:text-[20px] lg:text-[28px] xl:text-[33.72px] leading-snug sm:leading-[1.4] md:leading-[40.9px]">
-            InstaFlow answers <span className="text-[#BBBBBB]">every call, handles the 
-conversation, and locks in appointments.</span>  Day or night, without you lifting a finger.
-              {/* <span className="text-[#BBBBBB]">
-                no staff overload. Just consistent bookings 24/7.
-              </span> */}
+            Spas, med spas, and salons lose 30–40% of potential bookings when
+            calls go unanswered.{" "}
+            <span className="text-[#BBBBBB]">
+              That’s not a marketing problem—it’s a phone problem.
+            </span>
             </h3>
           </div>
 
-          <button
+          <a
+            href="#calculator"
             className="
               mt-0 sm:mt-2 px-4 sm:px-6 py-3 sm:py-4 rounded-full
               bg-white text-[#0a0312]
               text-xs sm:text-sm font-semibold uppercase
-              cursor-pointer
+              cursor-pointer inline-block
             "
           >
-            Book More Appointments
-          </button>
+See Your Revenue Loss
+          </a>
         </div>
       </div>
     </section>

@@ -70,12 +70,12 @@ function LeftPanel() {
   return (
     <div className="mx-auto max-w-md lg:max-w-none">
       <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs tracking-[0.12em] text-white/80">
-        SMART GROWTH SOLUTIONS
+        What Happens When You Can’t Pick Up
       </div>
       <h2 className="mt-3 sm:mt-4 font-['Grift:Medium',sans-serif] text-xl sm:text-2xl md:text-[32px] lg:text-[40px] leading-[1.05] font-bold text-white">
-        SMARTER GROWTH
+        Voicemail Is
         <br />
-        <p className="mt-4">FOR WELLNESS</p>
+        <p className="mt-4">Costing You Bookings</p>
       </h2>
       <div className="mt-4 sm:mt-6 inline-flex relative items-center gap-2 sm:gap-3 rounded-[999px] bg-[#80808030] border border-white px-3 sm:px-4 py-2 lg:py-3">
         <div className="absolute left-1/2 -translate-x-1/2 w-[400px] h-[400px] rounded-full bg-[#8C21FF]/20 blur-[100px]" />
@@ -84,12 +84,12 @@ function LeftPanel() {
           <div className="flex items-center gap-2">
             <img alt="" src={RATINGS_ICON_SRC} className="h-5 w-5" />
             <span className="text-white font-medium">
-              “Feels like a real person on the line.”
+              “We were losing bookings after 6pm.”
             </span>
           </div>
           <div>
             <span className="text-xs text-white/70">
-              Feedback from early medspa and clinic teams using InstaFlow.
+              Many businesses don’t realize how much revenue they lose to missed calls.
             </span>
           </div>
         </div>
@@ -110,24 +110,24 @@ export function SmartGrowth() {
         <div className="mx-auto w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[407px_257px] items-end justify-center gap-3 sm:gap-4 md:gap-6">
           <Card
             image={GROWTH_IMG_1}
-            label="saloon"
+            label="3PM RUSH"
             className="h-[180px] sm:h-[220px] md:h-[300px] w-full md:w-[407px]"
           />
           <Card
             image={GROWTH_IMG_2}
-            label="spa"
+            label="AFTER HOURS"
             className="h-[180px] sm:h-[220px] md:h-[300px] w-full md:w-[257px]"
           />
         </div>
         <div className="mt-4 sm:mt-6 mx-auto w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[257px_407px] items-end justify-center gap-3 sm:gap-4 md:gap-6">
           <Card
             image={GROWTH_IMG_3}
-            label="Medical spa"
+            label="EVERY MONTH"
             className="h-[180px] sm:h-[220px] md:h-[340px] w-full md:w-[257px]"
           />
           <Card
             image={GROWTH_IMG_4}
-            label="Barbershop"
+            label="LOST REVENUE"
             className="h-[180px] sm:h-[220px] md:h-[340px] w-full md:w-[407px]"
           />
         </div>

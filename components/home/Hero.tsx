@@ -5,7 +5,7 @@ import { MessageCircle, Mic } from "lucide-react";
 import { useVoiceAgent } from "@/hooks/useVoiceAgent";
 import { AVAILABLE_VOICES } from "@/constants";
 
-const ROTATING_WORDS = ["Spa", "MedSpa", "Salon"];
+const ROTATING_WORDS = ["Spa", "MedSpa", "Barbershop"];
 /* ================= BACKGROUND LAYER: blur columns + starry ================= */
 function HeroBackground() {
   return (
@@ -22,49 +22,44 @@ function HeroBackground() {
 /* ================= HERO TITLE + SUBTITLE ================= */
 function HeroHeadline() {
   const [wordIndex, setWordIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
+    const duration = 2500;
+    const fadeOut = 400;
     const interval = setInterval(() => {
-      setWordIndex((prev) => (prev + 1) % ROTATING_WORDS.length);
-    }, 2000);
+      setIsVisible(false);
+      setTimeout(() => {
+        setWordIndex((prev) => (prev + 1) % ROTATING_WORDS.length);
+        setIsVisible(true);
+      }, fadeOut);
+    }, duration);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="flex flex-col items-center gap-4 text-center max-w-[640px] px-4 relative z-10">
-      <div className="font-['Grift:Extra_Bold',sans-serif] mt-8 text-center not-italic text-[24px] sm:text-[38px] md:text-[42.755px] leading-[1.1] uppercase">
+      <div className="font-['Grift:Extra_Bold',sans-serif] mt-8 text-center not-italic text-[24px] sm:text-[38px] md:text-[42.755px] leading-[1.15] uppercase">
         <p
           className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa]"
           style={{ WebkitTextFillColor: "transparent" }}
         >
-          Every Call
+          Turn Every Call Into a Booking.
         </p>
-     <p
-  className="bg-clip-text mx-auto text-center font-bold bg-gradient-to-b from-white to-[#bababa] w-full flex justify-center items-center gap-2"
-  style={{ WebkitTextFillColor: "transparent" }}
->
-  <span>Answered</span>
-
-  <span className="relative inline-block h-[1.2em] w-[90px] lg:w-[110px]">
-    {ROTATING_WORDS.map((word, index) => (
-      <span
-        key={word}
-        className={`absolute text-center left-0 top-0 w-full text-yellow-400 transition-all duration-500 ease-in-out ${
-          index === wordIndex
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-6"
-        }`}
-        style={{ WebkitTextFillColor: "initial" }}
-      >
-        {word}
-      </span>
-    ))}
-  </span>
-</p>
+        <p
+          className="min-h-[1.2em] mt-2 bg-clip-text font-bold bg-gradient-to-b from-[#fff3a3] to-[#ffd23f] transition-opacity duration-300"
+          style={{
+            WebkitTextFillColor: "transparent",
+            opacity: isVisible ? 1 : 0,
+          }}
+        >
+          {ROTATING_WORDS[wordIndex]}
+        </p>
       </div>
       <p className="text-[#c8c8c8] text-sm sm:text-[15px] leading-relaxed max-w-[560px]">
-        Scale your business with human-sounding AI voice agents. Pick up every
-        lead, handle complex support, and never leave a customer hanging.
+        Missed calls = lost bookings. Our AI receptionist answers every call 24/7,
+        books appointments in real time, and sounds like a real person—so you
+        never lose a lead to voicemail again.
       </p>
     </div>
   );
@@ -198,7 +193,7 @@ function HeroCard({
     <div className="relative w-full max-w-[560px] min-w-0 rounded-[16px] sm:rounded-[20px] p-4 sm:p-6 flex flex-col gap-4 sm:gap-6 overflow-hidden border border-white/10 backdrop-blur-xl shadow-[inset_0_1px_40px_0_rgba(227,222,255,0.2),inset_0_0_56px_-36px_rgba(255,255,255,0.5)] bg-white/[0.06]">
       <div className="absolute inset-0 pointer-events-none bg-[#CD9EFF]/10 blur-[80px] rounded-full w-32 h-32 left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2" />
       <p className="text-center text-base sm:text-lg md:text-[22px] uppercase font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white to-[#8D23FF] relative z-10">
-        Call & Test the AI Agent Now
+        Call & Test the AI Receptionist Now
       </p>
       <div className="relative z-10 w-full flex justify-center">
         <img
@@ -312,7 +307,7 @@ function HeroCard({
           ) : (
             <>
               <MessageCircle className="size-5" />
-              Talk to Professional
+              Talk to Receptionist
             </>
           )}
         </button>
@@ -325,6 +320,9 @@ function HeroCard({
           End conversation
         </button>
       )}
+      <p className="text-center text-[11px] sm:text-xs text-white/65 relative z-10">
+        No credit card. Live test in under 60 seconds.
+      </p>
 
       {isActive && transcription.length > 0 && (
         <div className="transcription-scroll relative z-10 pt-4 border-t border-white/10 space-y-2 max-h-40 overflow-y-auto">
