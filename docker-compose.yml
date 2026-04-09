@@ -1,0 +1,68 @@
+# Production compose file for the VPS.
+#
+# Two services on a private bridge network:
+#   - app   : the Next.js standalone server, bound to 127.0.0.1:3010 on the
+#             host so the host nginx can reverse-proxy to it (matches the
+#             persona-ai pattern already running on this VPS).
+#   - mongo : MongoDB 7, NO host port exposed — only reachable from `app`
+#             via the internal Docker network. Auth enabled.
+#
+# Secrets come from /opt/instaflow/.env on the VPS (NOT in git). The
+# GitHub Actions deploy step writes that file from repo secrets.
+
+services:
+  app:
+    image: ghcr.io/sakib103695/instaflow:latest
+    container_name: instaflow-app
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      # Build the Mongo URI inside the container so the password never leaves
+      # the VPS env file. The hostname `mongo` resolves on the compose network.
+      MONGODB_URI: mongodb://instaflow:${MONGO_APP_PASSWORD}@mongo:27017/instaflow_db?authSource=admin
+      MONGODB_DB_NAME: instaflow_db
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      # NEXT_PUBLIC_VAPI_PUBLIC_KEY is baked into the image at build time
+      # (because Next inlines NEXT_PUBLIC_* vars). Setting it here too is
+      # harmless and makes it easy to verify with `docker exec env`.
+      NEXT_PUBLIC_VAPI_PUBLIC_KEY: ${NEXT_PUBLIC_VAPI_PUBLIC_KEY}
+    ports:
+      # Bind to localhost only — host nginx is the public entry point.
+      - "127.0.0.1:3010:3000"
+    networks:
+      - instaflow
+
+  mongo:
+    image: mongo:7
+    container_name: instaflow-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: instaflow
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_APP_PASSWORD}
+      MONGO_INITDB_DATABASE: instaflow_db
+    volumes:
+      - mongo_data:/data/db
+      - mongo_config:/data/configdb
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - instaflow
+    # No `ports:` block — Mongo is private to the compose network.
+
+networks:
+  instaflow:
+    driver: bridge
+
+volumes:
+  mongo_data:
+    driver: local
+  mongo_config:
+    driver: local

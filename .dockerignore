@@ -1,0 +1,38 @@
+# Anything not needed for the Docker build context. Smaller context = faster
+# uploads + faster builds + no risk of leaking local secrets into the image.
+
+# Dependencies — installed inside the image
+node_modules
+.pnpm-store
+
+# Build artifacts
+.next
+dist
+out
+
+# Local env / secrets — runtime env comes from docker compose
+.env
+.env.*
+!.env.example
+
+# VCS
+.git
+.gitignore
+.gitattributes
+.github
+
+# IDE / editor
+.vscode
+.idea
+.DS_Store
+
+# Misc
+*.log
+README.md
+DEPLOY.md
+deploy/
+docker-compose.yml
+Dockerfile
+.dockerignore
+tsconfig.tsbuildinfo
+.vercel

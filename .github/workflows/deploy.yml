@@ -1,0 +1,137 @@
+# Build the production Docker image, push it to GitHub Container Registry,
+# then SSH into the Contabo VPS and roll the running stack to the new image.
+#
+# Required repo secrets (Settings → Secrets and variables → Actions):
+#   VPS_HOST                  Contabo IP or hostname
+#   VPS_USER                  deploy
+#   VPS_SSH_KEY               Private key whose pubkey is in deploy@VPS authorized_keys
+#   VPS_SSH_KNOWN_HOSTS       Optional. Output of `ssh-keyscan -H <host>` for strict host checking
+#   NEXT_PUBLIC_VAPI_PUBLIC_KEY  Baked into the build (Next inlines NEXT_PUBLIC_*)
+#   GEMINI_API_KEY            Server-side, for the scrape pipeline
+#   ADMIN_PASSWORD            Gates /admin and /api/clients
+#   MONGO_APP_PASSWORD        Mongo root + app user password (single user for simplicity)
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute image metadata
+        id: meta
+        run: |
+          # Lowercase the image name (GHCR requires lowercase) and tag with the
+          # short SHA so we can roll back to any prior build by pulling that tag.
+          IMAGE_LOWER=$(echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          SHORT_SHA=${GITHUB_SHA::7}
+          echo "image_lower=${IMAGE_LOWER}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image_lower }}:latest
+            ${{ steps.meta.outputs.image_lower }}:${{ steps.meta.outputs.image_tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NEXT_PUBLIC_VAPI_PUBLIC_KEY=${{ secrets.NEXT_PUBLIC_VAPI_PUBLIC_KEY }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          # Use known_hosts secret if provided, otherwise scan on the fly.
+          if [ -n "${{ secrets.VPS_SSH_KNOWN_HOSTS }}" ]; then
+            echo "${{ secrets.VPS_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          fi
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Materialize .env locally
+        env:
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          MONGO_APP_PASSWORD: ${{ secrets.MONGO_APP_PASSWORD }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          NEXT_PUBLIC_VAPI_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPI_PUBLIC_KEY }}
+        run: |
+          # Write the production .env on the runner; scp it to the VPS in the
+          # next step. Using a separate step keeps the secrets out of the SSH
+          # command line so they don't show up in process listings.
+          umask 077
+          {
+            echo "ADMIN_PASSWORD=${ADMIN_PASSWORD}"
+            echo "MONGO_APP_PASSWORD=${MONGO_APP_PASSWORD}"
+            echo "GEMINI_API_KEY=${GEMINI_API_KEY}"
+            echo "NEXT_PUBLIC_VAPI_PUBLIC_KEY=${NEXT_PUBLIC_VAPI_PUBLIC_KEY}"
+          } > /tmp/instaflow.env
+
+      - name: Checkout (for compose file)
+        uses: actions/checkout@v4
+        with:
+          path: repo
+
+      - name: Deploy to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Make sure /opt/instaflow exists and is owned by deploy.
+          ssh -i ~/.ssh/id_deploy "$VPS_USER@$VPS_HOST" \
+            'mkdir -p /opt/instaflow && cd /opt/instaflow'
+
+          # Ship the compose file and .env up to the VPS.
+          scp -i ~/.ssh/id_deploy repo/docker-compose.yml \
+            "$VPS_USER@$VPS_HOST:/opt/instaflow/docker-compose.yml"
+          scp -i ~/.ssh/id_deploy /tmp/instaflow.env \
+            "$VPS_USER@$VPS_HOST:/opt/instaflow/.env"
+          ssh -i ~/.ssh/id_deploy "$VPS_USER@$VPS_HOST" \
+            'chmod 600 /opt/instaflow/.env'
+
+          # Roll the stack: GHCR login, pull new image, restart, prune.
+          ssh -i ~/.ssh/id_deploy "$VPS_USER@$VPS_HOST" \
+            "echo '$GHCR_TOKEN' | docker login ghcr.io -u '$GHCR_USER' --password-stdin && \
+             cd /opt/instaflow && \
+             docker compose pull && \
+             docker compose up -d --remove-orphans && \
+             docker image prune -f"
