@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start"
   },
+  "packageManager": "pnpm@8.14.0",
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
     "@google/genai": "^1.40.0",

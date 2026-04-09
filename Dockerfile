@@ -13,7 +13,9 @@ ARG NODE_VERSION=20-alpine
 
 # ===== Stage 1: deps =====
 FROM node:${NODE_VERSION} AS deps
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# corepack reads the `packageManager` field in package.json so we get the
+# exact same pnpm version that wrote the lockfile (avoids ERR_PNPM_LOCKFILE_BREAKING_CHANGE).
+RUN corepack enable
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
@@ -21,7 +23,9 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
 
 # ===== Stage 2: builder =====
 FROM node:${NODE_VERSION} AS builder
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# corepack reads the `packageManager` field in package.json so we get the
+# exact same pnpm version that wrote the lockfile (avoids ERR_PNPM_LOCKFILE_BREAKING_CHANGE).
+RUN corepack enable
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
