@@ -1,7 +1,9 @@
 "use client";
-import { AVAILABLE_VOICES } from '../constants';
-import { useVoiceAgent } from '../hooks/useVoiceAgent';
+import { AVAILABLE_VOICES, INSTAFLOW_SYSTEM_INSTRUCTION } from '../constants';
+import { useVapiAgent } from '../hooks/useVapiAgent';
 import AudioVisualizer from './AudioVisualizer';
+
+const DEMO_GREETING = "Hi, thanks for calling GlowLift Medspa — this is Mia, how can I help you today?";
 
 export default function VoiceDemo() {
   const {
@@ -15,7 +17,10 @@ export default function VoiceDemo() {
     previewVoice,
     startConversation,
     stopConversation,
-  } = useVoiceAgent();
+  } = useVapiAgent({
+    systemInstruction: INSTAFLOW_SYSTEM_INSTRUCTION,
+    greeting: DEMO_GREETING,
+  });
 
   return (
     <div
@@ -131,7 +136,7 @@ export default function VoiceDemo() {
             </button>
           ) : (
             <button
-              onClick={stopConversation}
+              onClick={() => stopConversation()}
               className="flex items-center gap-4 bg-red-500 hover:bg-red-600 text-white px-12 py-6 rounded-full font-black text-lg transition-all shadow-xl active:scale-95 animate-pulse"
             >
               End Conversation
@@ -142,22 +147,23 @@ export default function VoiceDemo() {
 
       {isActive && transcription.length > 0 && (
         <div className="mt-16 pt-10 border-t border-white/5">
-          <div className="space-y-4 max-h-60 overflow-y-auto pr-2 scrollbar-hide">
-            {transcription.map((entry, idx) => (
-              <div
-                key={idx}
-                className={`p-4 rounded-2xl border ${
-                  entry.role === 'agent'
-                    ? 'bg-violet-600/10 border-violet-500/20 mr-6 text-left'
-                    : 'bg-white/10 border-white/20 ml-6 text-right'
-                }`}
-              >
-                <p className="text-xs text-slate-400 font-semibold mb-1">
-                  {entry.role === 'agent' ? selectedVoice.label : 'You'}
-                </p>
-                <p className="text-sm text-slate-300 font-medium leading-relaxed">{entry.text}</p>
-              </div>
-            ))}
+          <div className="space-y-3 max-h-72 overflow-y-auto pr-2 scrollbar-hide">
+            {transcription.map((entry, idx) => {
+              const isAgent = entry.role === 'agent';
+              return (
+                <div key={idx} className={`flex ${isAgent ? 'justify-start' : 'justify-end'}`}>
+                  <div
+                    className={`max-w-[78%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                      isAgent
+                        ? 'bg-violet-600/15 border border-violet-500/20 text-slate-100 rounded-bl-md'
+                        : 'bg-white text-black rounded-br-md'
+                    }`}
+                  >
+                    {entry.text}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

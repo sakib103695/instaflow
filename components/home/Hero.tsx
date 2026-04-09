@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from "react";
 import svgPaths from "@/public/assets/data/svgPaths";
 import { MessageCircle, Mic } from "lucide-react";
-import { useVoiceAgent } from "@/hooks/useVoiceAgent";
+import { useVapiAgent } from "@/hooks/useVapiAgent";
 import { AVAILABLE_VOICES } from "@/constants";
+import type { AgentConfig } from "@/lib/clientTypes";
 
 const ROTATING_WORDS = ["Spa", "MedSpa", "Barbershop"];
 /* ================= BACKGROUND LAYER: blur columns + starry ================= */
@@ -314,7 +315,7 @@ function HeroCard({
       ) : (
         <button
           type="button"
-          onClick={stopConversation}
+          onClick={() => stopConversation()}
           className="w-full py-3.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-sm uppercase flex items-center justify-center gap-2 transition-colors relative z-10 border border-red-400/50"
         >
           End conversation
@@ -376,7 +377,7 @@ function RightBubble() {
 }
 
 /* ================= COMBINED HERO ================= */
-export function Hero() {
+export function Hero({ agentConfig }: { agentConfig: AgentConfig }) {
   const {
     isActive,
     isConnecting,
@@ -388,7 +389,12 @@ export function Hero() {
     previewVoice,
     startConversation,
     stopConversation,
-  } = useVoiceAgent();
+  } = useVapiAgent({
+    systemInstruction: agentConfig.systemPrompt,
+    greeting: agentConfig.greeting,
+    voiceId: agentConfig.voiceId,
+    saveMeta: { clientSlug: agentConfig.slug },
+  });
 
   return (
     <section

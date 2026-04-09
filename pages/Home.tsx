@@ -11,12 +11,17 @@ import Footer from "@/components/Footer";
 import Header from "@/components/home/Header";
 import { Testimonial } from "@/components/home/Testimonial";
 import FinalCTA from "@/components/home/FinalCTA";
+import type { AgentConfig } from "@/lib/clientTypes";
 
-export default function Home() {
+type HomeProps = {
+  agentConfig: AgentConfig;
+};
+
+export default function Home({ agentConfig }: HomeProps) {
   return (
     <div className="bg-black text-white">
       <Header />
-      <Hero />
+      <Hero agentConfig={agentConfig} />
       <ConversionProofStrip />
       <RevenueCalculator />
       <EffortlessGrowth />

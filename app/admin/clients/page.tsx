@@ -1,0 +1,194 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { ConfigProvider, Table, Card, Typography, Button, Space, Skeleton, theme, Popconfirm, message, Tag, Tooltip } from 'antd';
+import type { ThemeConfig } from 'antd';
+import { APP_CONFIG } from '@/constants';
+
+const { darkAlgorithm } = theme;
+const { Title, Text } = Typography;
+
+const ADMIN_THEME: ThemeConfig = {
+  algorithm: darkAlgorithm,
+  token: {
+    colorPrimary: APP_CONFIG.primaryColor,
+    colorBgContainer: '#1a0a2e',
+    colorBgElevated: '#251044',
+    colorBorder: 'rgba(91, 33, 182, 0.35)',
+    colorText: 'rgba(255,255,255,0.9)',
+    colorTextSecondary: 'rgba(255,255,255,0.6)',
+  },
+  components: {
+    Table: { headerBg: '#251044', headerColor: 'rgba(255,255,255,0.9)' },
+    Card: { colorBgContainer: '#1a0a2e' },
+  },
+};
+
+type ClientRow = {
+  slug: string;
+  name: string;
+  domain: string;
+  voiceId: string;
+  isDefault?: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export default function AdminClientsPage() {
+  const [data, setData] = useState<ClientRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  async function load() {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/clients');
+      if (!res.ok) throw new Error(`Failed (${res.status})`);
+      setData(await res.json());
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Failed to load');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  async function handleDelete(slug: string) {
+    const res = await fetch(`/api/clients/${slug}`, { method: 'DELETE' });
+    if (res.ok) {
+      message.success('Client deleted');
+      load();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      message.error(err.error || 'Delete failed');
+    }
+  }
+
+  async function handleSetDefault(slug: string) {
+    const res = await fetch(`/api/clients/${slug}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isDefault: true }),
+    });
+    if (res.ok) {
+      message.success('Default updated');
+      load();
+    } else {
+      message.error('Failed to set default');
+    }
+  }
+
+  const columns = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (name: string, row: ClientRow) => (
+        <Space size={8}>
+          <Link href={`/admin/clients/${row.slug}`} style={{ color: APP_CONFIG.primaryColor }}>
+            {name}
+          </Link>
+          {row.isDefault && (
+            <Tooltip title="Loaded on the homepage when no ?client= query is set">
+              <Tag color="gold">Default</Tag>
+            </Tooltip>
+          )}
+        </Space>
+      ),
+    },
+    { title: 'Slug', dataIndex: 'slug', key: 'slug' },
+    { title: 'Domain', dataIndex: 'domain', key: 'domain' },
+    {
+      title: 'Homepage URL',
+      key: 'public',
+      render: (_: unknown, row: ClientRow) => (
+        <a
+          href={row.isDefault ? '/' : `/?client=${row.slug}`}
+          target="_blank"
+          rel="noreferrer"
+          style={{ color: '#a78bfa' }}
+        >
+          {row.isDefault ? '/' : `/?client=${row.slug}`}
+        </a>
+      ),
+    },
+    { title: 'Voice', dataIndex: 'voiceId', key: 'voiceId', width: 110 },
+    {
+      title: 'Updated',
+      dataIndex: 'updatedAt',
+      key: 'updatedAt',
+      render: (v: string) => (v ? new Date(v).toLocaleString() : '—'),
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      width: 280,
+      render: (_: unknown, row: ClientRow) => (
+        <Space>
+          <Button size="small" onClick={() => router.push(`/admin/clients/${row.slug}`)}>
+            Edit
+          </Button>
+          {!row.isDefault && (
+            <Button size="small" onClick={() => handleSetDefault(row.slug)}>
+              Set default
+            </Button>
+          )}
+          {row.isDefault ? (
+            <Tooltip title="Promote another client to default before deleting this one">
+              <Button size="small" danger disabled>
+                Delete
+              </Button>
+            </Tooltip>
+          ) : (
+            <Popconfirm title="Delete this client?" onConfirm={() => handleDelete(row.slug)}>
+              <Button size="small" danger>
+                Delete
+              </Button>
+            </Popconfirm>
+          )}
+        </Space>
+      ),
+    },
+  ];
+
+  return (
+    <ConfigProvider theme={ADMIN_THEME}>
+      <div style={{ minHeight: '100vh', padding: 32, background: APP_CONFIG.secondaryColor }}>
+        <Card
+          variant="outlined"
+          style={{
+            maxWidth: 1200,
+            margin: '0 auto',
+            border: '1px solid rgba(91, 33, 182, 0.4)',
+            boxShadow: '0 0 40px rgba(91, 33, 182, 0.12)',
+          }}
+          styles={{ body: { padding: 24 } }}
+        >
+          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <Title level={3} style={{ marginBottom: 0, color: 'rgba(255,255,255,0.95)' }}>
+                  Clients
+                </Title>
+                <Text type="secondary">Each client gets its own AI voice agent at /[slug].</Text>
+              </div>
+              <Button type="primary" onClick={() => router.push('/admin/clients/new')}>
+                + New Client
+              </Button>
+            </div>
+            {loading ? (
+              <Skeleton active paragraph={{ rows: 6 }} />
+            ) : (
+              <Table rowKey="slug" columns={columns} dataSource={data} pagination={{ pageSize: 20 }} />
+            )}
+          </Space>
+        </Card>
+      </div>
+    </ConfigProvider>
+  );
+}
