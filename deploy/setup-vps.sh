@@ -53,10 +53,16 @@ chmod +x "$PROJECT_DIR/backup-mongo.sh"
 CRON_LINE="0 3 * * * /opt/instaflow/backup-mongo.sh >> /opt/instaflow/backups/cron.log 2>&1"
 ( crontab -l 2>/dev/null | grep -v '/opt/instaflow/backup-mongo.sh' ; echo "$CRON_LINE" ) | crontab -
 
+echo "==> Fetching nginx vhost template into $PROJECT_DIR"
+curl -fsSL https://raw.githubusercontent.com/sakib103695/instaflow/main/deploy/nginx-instaflow.conf \
+  -o "$PROJECT_DIR/nginx-instaflow.conf"
+
+echo
 echo "==> Done. Next steps:"
 echo "  1. Set the GitHub secrets and push to main to trigger the first deploy."
 echo "  2. After the first successful deploy, install the nginx vhost:"
-echo "       sudo cp deploy/nginx-instaflow.conf /etc/nginx/sites-available/instaflow"
+echo "       sudo cp $PROJECT_DIR/nginx-instaflow.conf /etc/nginx/sites-available/instaflow"
+echo "       sudo nano /etc/nginx/sites-available/instaflow   # set your real domain"
 echo "       sudo ln -s /etc/nginx/sites-available/instaflow /etc/nginx/sites-enabled/"
 echo "       sudo nginx -t && sudo systemctl reload nginx"
 echo "       sudo certbot --nginx -d instaflow.YOUR-DOMAIN"
