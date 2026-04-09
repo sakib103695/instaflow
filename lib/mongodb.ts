@@ -1,19 +1,40 @@
 import { MongoClient, ObjectId } from 'mongodb';
 
-const uri = process.env.MONGODB_URI;
+/**
+ * Lazy MongoDB client.
+ *
+ * IMPORTANT: We do NOT throw at module load time when MONGODB_URI is missing.
+ * Next.js evaluates this module during `next build` (Collecting page data),
+ * and at build time runtime env vars aren't set yet. Throwing here would
+ * break the Docker image build. Instead, we throw the first time something
+ * actually tries to use the database — by then we're at runtime in a real
+ * request handler and the env IS set.
+ */
+
 const dbName = process.env.MONGODB_DB_NAME || 'instaflow_db';
 
-if (!uri) {
-  throw new Error('Missing MONGODB_URI. Set it in .env or .env.local');
-}
-
-// Reuse a single MongoClient across hot reloads in dev (Next.js).
 const globalForMongo = globalThis as unknown as { _mongoClient?: MongoClient };
-const client = globalForMongo._mongoClient ?? new MongoClient(uri);
-if (process.env.NODE_ENV !== 'production') globalForMongo._mongoClient = client;
+
+function getClient(): MongoClient {
+  if (globalForMongo._mongoClient) return globalForMongo._mongoClient;
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error('Missing MONGODB_URI. Set it in .env or in the runtime environment.');
+  }
+  const client = new MongoClient(uri);
+  if (process.env.NODE_ENV !== 'production') {
+    globalForMongo._mongoClient = client;
+  } else {
+    // Cache in module-scoped global anyway to avoid reconnecting on every
+    // request in production. (We just don't pollute the dev hot-reload global.)
+    globalForMongo._mongoClient = client;
+  }
+  return client;
+}
 
 let connected = false;
 async function getDb() {
+  const client = getClient();
   if (!connected) {
     await client.connect();
     connected = true;

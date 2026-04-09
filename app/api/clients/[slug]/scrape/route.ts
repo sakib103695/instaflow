@@ -5,6 +5,7 @@ import { structureContextFromRawText } from '@/lib/structureContext';
 import { composeSystemInstruction } from '@/lib/agentPrompt';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 // Scraping + Gemini structuring can take 30-60s for big sites.
 export const maxDuration = 120;
 

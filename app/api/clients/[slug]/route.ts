@@ -4,6 +4,7 @@ import { composeSystemInstruction } from '@/lib/agentPrompt';
 import type { StructuredContext } from '@/lib/clientTypes';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 type RouteCtx = { params: Promise<{ slug: string }> };
 

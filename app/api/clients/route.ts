@@ -4,6 +4,7 @@ import { EMPTY_STRUCTURED_CONTEXT, slugify } from '@/lib/clientTypes';
 import { composeSystemInstruction } from '@/lib/agentPrompt';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 /** GET /api/clients — list all clients (admin only). */
 export async function GET() {
