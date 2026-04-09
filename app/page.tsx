@@ -1,4 +1,4 @@
-import Home from '@/pages/Home';
+import Home from '@/views/Home';
 import { getClientForPage } from '@/lib/getClient';
 import { INSTAFLOW_SYSTEM_INSTRUCTION, DEFAULT_VOICE_ID } from '@/constants';
 
