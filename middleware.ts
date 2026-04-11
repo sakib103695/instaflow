@@ -23,7 +23,9 @@ export function middleware(req: NextRequest) {
 
   const { pathname } = req.nextUrl;
   const needsAuth =
-    pathname.startsWith('/admin') || pathname.startsWith('/api/clients');
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/api/clients') ||
+    pathname.startsWith('/api/admin');
   if (!needsAuth) return NextResponse.next();
 
   // 1. Cookie check
@@ -59,5 +61,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/clients/:path*'],
+  matcher: ['/admin/:path*', '/api/clients/:path*', '/api/admin/:path*'],
 };

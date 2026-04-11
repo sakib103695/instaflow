@@ -52,4 +52,9 @@ export async function getClientsCollection() {
   return db.collection('clients');
 }
 
+export async function getVoicesCollection() {
+  const db = await getDb();
+  return db.collection('voices');
+}
+
 export { ObjectId };

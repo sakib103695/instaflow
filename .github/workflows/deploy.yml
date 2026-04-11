@@ -10,6 +10,7 @@
 #   GEMINI_API_KEY            Server-side, for the scrape pipeline
 #   ADMIN_PASSWORD            Gates /admin and /api/clients
 #   MONGO_APP_PASSWORD        Mongo root + app user password (single user for simplicity)
+#   ELEVENLABS_API_KEY        Server-side, for the admin voice library page
 
 name: Deploy
 
@@ -91,6 +92,7 @@ jobs:
           MONGO_APP_PASSWORD: ${{ secrets.MONGO_APP_PASSWORD }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           NEXT_PUBLIC_VAPI_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPI_PUBLIC_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
         run: |
           # Write the production .env on the runner; scp it to the VPS in the
           # next step. Using a separate step keeps the secrets out of the SSH
@@ -101,6 +103,7 @@ jobs:
             echo "MONGO_APP_PASSWORD=${MONGO_APP_PASSWORD}"
             echo "GEMINI_API_KEY=${GEMINI_API_KEY}"
             echo "NEXT_PUBLIC_VAPI_PUBLIC_KEY=${NEXT_PUBLIC_VAPI_PUBLIC_KEY}"
+            echo "ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}"
           } > /tmp/instaflow.env
 
       - name: Checkout (for compose file)
