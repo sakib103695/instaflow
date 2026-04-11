@@ -4,7 +4,13 @@ import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { ConfigProvider, Layout, Menu, theme } from 'antd';
 import type { ThemeConfig } from 'antd';
-import { TeamOutlined, MessageOutlined, SoundOutlined } from '@ant-design/icons';
+import {
+  TeamOutlined,
+  MessageOutlined,
+  SoundOutlined,
+  UnorderedListOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
 import { APP_CONFIG } from '@/constants';
 
 const { Sider, Content } = Layout;
@@ -30,22 +36,50 @@ const ADMIN_THEME: ThemeConfig = {
   },
 };
 
-const NAV_ITEMS = [
-  { key: '/admin/clients', icon: <TeamOutlined />, label: 'Clients' },
+type NavItem = {
+  key: string;
+  icon: React.ReactNode;
+  label: string;
+  children?: { key: string; icon?: React.ReactNode; label: string }[];
+};
+
+const NAV_ITEMS: NavItem[] = [
+  {
+    key: 'group:clients',
+    icon: <TeamOutlined />,
+    label: 'Clients',
+    children: [
+      { key: '/admin/clients', icon: <UnorderedListOutlined />, label: 'All Clients' },
+      { key: '/admin/clients/new', icon: <PlusOutlined />, label: 'Add New' },
+    ],
+  },
   { key: '/admin/22334412', icon: <MessageOutlined />, label: 'Conversations' },
   { key: '/admin/voices', icon: <SoundOutlined />, label: 'Voices' },
 ];
+
+/** Flatten NAV_ITEMS into the shape Ant's Menu wants. */
+const MENU_ITEMS = NAV_ITEMS.map((item) =>
+  item.children
+    ? { key: item.key, icon: item.icon, label: item.label, children: item.children }
+    : { key: item.key, icon: item.icon, label: item.label },
+);
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname() || '';
   const [collapsed, setCollapsed] = useState(false);
 
-  // Highlight the parent nav item even when on a nested route like
-  // /admin/clients/new or /admin/22334412/abc123.
+  // Flatten leaves only — group keys ("group:*") never match a URL.
+  const leafKeys = NAV_ITEMS.flatMap((item) =>
+    item.children ? item.children.map((c) => c.key) : [item.key],
+  );
   const selectedKey =
-    NAV_ITEMS.find((item) => pathname === item.key || pathname.startsWith(item.key + '/'))
-      ?.key ?? '/admin/clients';
+    leafKeys
+      .filter((k) => pathname === k || pathname.startsWith(k + '/'))
+      .sort((a, b) => b.length - a.length)[0] ?? '/admin/clients';
+  const openKeys = NAV_ITEMS.filter((i) =>
+    i.children?.some((c) => pathname === c.key || pathname.startsWith(c.key + '/')),
+  ).map((i) => i.key);
 
   return (
     <ConfigProvider theme={ADMIN_THEME}>
@@ -80,7 +114,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             theme="dark"
             mode="inline"
             selectedKeys={[selectedKey]}
-            items={NAV_ITEMS}
+            defaultOpenKeys={openKeys}
+            items={MENU_ITEMS}
             onClick={({ key }) => router.push(key)}
             style={{ background: '#0f0518', borderRight: 0 }}
           />
