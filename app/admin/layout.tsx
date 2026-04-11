@@ -10,6 +10,7 @@ import {
   SoundOutlined,
   UnorderedListOutlined,
   PlusOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import { APP_CONFIG } from '@/constants';
 
@@ -51,6 +52,7 @@ const NAV_ITEMS: NavItem[] = [
     children: [
       { key: '/admin/clients', icon: <UnorderedListOutlined />, label: 'All Clients' },
       { key: '/admin/clients/new', icon: <PlusOutlined />, label: 'Add New' },
+      { key: '/admin/clients/bulk', icon: <UploadOutlined />, label: 'Bulk Upload' },
     ],
   },
   { key: '/admin/22334412', icon: <MessageOutlined />, label: 'Conversations' },

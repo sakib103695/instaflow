@@ -53,6 +53,13 @@ export type ClientDoc = {
    * and it cannot be deleted (only swapped to another client).
    */
   isDefault?: boolean;
+  /**
+   * Lifecycle of the scrape pipeline. Bulk-uploaded clients start as
+   * 'pending'; the worker flips them to 'done' or 'failed'. Legacy
+   * single-create clients have it undefined and are treated as 'done'.
+   */
+  scrapeStatus?: 'pending' | 'done' | 'failed';
+  scrapeError?: string;
   rawScrape: string;
   scrapeMeta: {
     pagesScraped: number;
