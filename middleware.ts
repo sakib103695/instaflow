@@ -15,7 +15,10 @@ import { NextResponse, type NextRequest } from 'next/server';
  * Set ADMIN_PASSWORD in .env.local. If unset, the gate is OPEN (dev mode).
  */
 export function middleware(req: NextRequest) {
-  const password = process.env.ADMIN_PASSWORD;
+  // Trim to defend against accidental trailing whitespace/newlines in the
+  // stored secret — we hit this once because the GitHub secret had a \n,
+  // and user-typed passwords never include one.
+  const password = process.env.ADMIN_PASSWORD?.trim();
   if (!password) return NextResponse.next(); // dev mode — no gate
 
   const { pathname } = req.nextUrl;
@@ -33,7 +36,7 @@ export function middleware(req: NextRequest) {
     try {
       const decoded = atob(auth.slice(6));
       const idx = decoded.indexOf(':');
-      const supplied = idx === -1 ? decoded : decoded.slice(idx + 1);
+      const supplied = (idx === -1 ? decoded : decoded.slice(idx + 1)).trim();
       if (supplied === password) {
         const res = NextResponse.next();
         res.cookies.set('instaflow_admin', password, {
