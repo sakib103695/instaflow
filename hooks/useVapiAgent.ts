@@ -234,9 +234,14 @@ export function useVapiAgent(opts: UseVapiAgentOptions) {
       });
 
       vapi.on('error', (err: any) => {
-        const detail =
-          err?.error?.message || err?.message || err?.errorMsg || '';
-        const text = String(detail).toLowerCase();
+        const toText = (v: any): string => {
+          if (v == null) return '';
+          if (typeof v === 'string') return v;
+          if (typeof v === 'object') return toText(v.message) || toText(v.error) || JSON.stringify(v);
+          return String(v);
+        };
+        const detail = toText(err?.error?.message) || toText(err?.message) || toText(err?.errorMsg) || toText(err);
+        const text = detail.toLowerCase();
         // Daily.co (Vapi's WebRTC layer) emits these as "errors" when a room
         // shuts down normally. They're not real failures — suppress them so
         // we don't flash a red error bar after a perfectly fine call.
