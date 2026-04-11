@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { resolveSecret } from '@/lib/secrets';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,10 +23,10 @@ type ElevenLabsVoice = {
  * TTS character quota.
  */
 export async function GET() {
-  const apiKey = process.env.ELEVENLABS_API_KEY?.trim();
-  if (!apiKey || apiKey === 'REPLACE_ME') {
+  const apiKey = await resolveSecret('elevenlabsApiKey', 'ELEVENLABS_API_KEY');
+  if (!apiKey) {
     return NextResponse.json(
-      { error: 'ELEVENLABS_API_KEY is not configured on the server.' },
+      { error: 'ElevenLabs API key is not set. Add it in /admin/settings.' },
       { status: 500 },
     );
   }

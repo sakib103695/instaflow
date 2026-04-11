@@ -2,6 +2,7 @@ import { GoogleGenAI } from '@google/genai';
 import { STRUCTURING_INSTRUCTION } from './agentPrompt';
 import { EMPTY_STRUCTURED_CONTEXT, type StructuredContext } from './clientTypes';
 import { getSetting } from './mongodb';
+import { resolveSecret } from './secrets';
 
 /**
  * Provider selection for the one-shot structuring step.
@@ -16,14 +17,13 @@ import { getSetting } from './mongodb';
  * accuracy matters more than latency, but at 5k clients the per-call cost
  * dominates and OpenRouter's cheaper models save hundreds of dollars.
  */
-function getServerGemini() {
-  const key = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-  if (!key) throw new Error('Missing GEMINI_API_KEY');
+async function getServerGemini() {
+  const key = await resolveSecret('geminiApiKey', 'GEMINI_API_KEY');
+  if (!key) throw new Error('Missing GEMINI_API_KEY. Set it in /admin/settings or as an env var.');
   return new GoogleGenAI({ apiKey: key });
 }
 
-async function structureViaOpenRouter(rawText: string, model: string): Promise<StructuredContext> {
-  const apiKey = process.env.OPENROUTER_API_KEY!.trim();
+async function structureViaOpenRouter(rawText: string, model: string, apiKey: string): Promise<StructuredContext> {
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -91,17 +91,16 @@ function normalize(partial: Partial<StructuredContext> | null): StructuredContex
 }
 
 export async function structureContextFromRawText(rawText: string): Promise<StructuredContext> {
-  // Prefer OpenRouter when configured AND an admin has picked a model in
-  // settings. The model list is curated at runtime via /admin/settings —
-  // no env var / redeploy needed to switch between OR's 200+ options.
-  const keyConfigured =
-    process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY !== 'REPLACE_ME';
-  if (keyConfigured) {
+  // Prefer OpenRouter when an API key + model are both configured via
+  // /admin/settings (or env fallback). The model list is curated at
+  // runtime — no redeploy needed to switch between OR's 200+ options.
+  const orKey = await resolveSecret('openrouterApiKey', 'OPENROUTER_API_KEY');
+  if (orKey) {
     const chosen = (await getSetting<string>('openrouterModel'))?.trim();
-    if (chosen) return structureViaOpenRouter(rawText, chosen);
+    if (chosen) return structureViaOpenRouter(rawText, chosen, orKey);
   }
 
-  const ai = getServerGemini();
+  const ai = await getServerGemini();
   // gemini-2.5-pro is the accuracy/quality choice for this one-shot extraction.
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-pro',
