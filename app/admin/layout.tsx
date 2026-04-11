@@ -11,6 +11,7 @@ import {
   UnorderedListOutlined,
   PlusOutlined,
   UploadOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
 import { APP_CONFIG } from '@/constants';
 
@@ -57,6 +58,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   { key: '/admin/22334412', icon: <MessageOutlined />, label: 'Conversations' },
   { key: '/admin/voices', icon: <SoundOutlined />, label: 'Voices' },
+  { key: '/admin/settings', icon: <SettingOutlined />, label: 'Settings' },
 ];
 
 /** Flatten NAV_ITEMS into the shape Ant's Menu wants. */

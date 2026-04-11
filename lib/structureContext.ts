@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { STRUCTURING_INSTRUCTION } from './agentPrompt';
 import { EMPTY_STRUCTURED_CONTEXT, type StructuredContext } from './clientTypes';
+import { getSetting } from './mongodb';
 
 /**
  * Provider selection for the one-shot structuring step.
@@ -21,11 +22,8 @@ function getServerGemini() {
   return new GoogleGenAI({ apiKey: key });
 }
 
-const DEFAULT_OPENROUTER_MODEL = 'google/gemini-2.0-flash-001';
-
-async function structureViaOpenRouter(rawText: string): Promise<StructuredContext> {
+async function structureViaOpenRouter(rawText: string, model: string): Promise<StructuredContext> {
   const apiKey = process.env.OPENROUTER_API_KEY!.trim();
-  const model = (process.env.OPENROUTER_STRUCTURING_MODEL || DEFAULT_OPENROUTER_MODEL).trim();
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -93,9 +91,14 @@ function normalize(partial: Partial<StructuredContext> | null): StructuredContex
 }
 
 export async function structureContextFromRawText(rawText: string): Promise<StructuredContext> {
-  // Prefer OpenRouter when configured — massively cheaper for bulk onboarding.
-  if (process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY !== 'REPLACE_ME') {
-    return structureViaOpenRouter(rawText);
+  // Prefer OpenRouter when configured AND an admin has picked a model in
+  // settings. The model list is curated at runtime via /admin/settings —
+  // no env var / redeploy needed to switch between OR's 200+ options.
+  const keyConfigured =
+    process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY !== 'REPLACE_ME';
+  if (keyConfigured) {
+    const chosen = (await getSetting<string>('openrouterModel'))?.trim();
+    if (chosen) return structureViaOpenRouter(rawText, chosen);
   }
 
   const ai = getServerGemini();

@@ -57,4 +57,21 @@ export async function getVoicesCollection() {
   return db.collection('voices');
 }
 
+export async function getSettingsCollection() {
+  const db = await getDb();
+  return db.collection('settings');
+}
+
+/** Tiny key-value helper for single-document settings. */
+export async function getSetting<T = string>(key: string): Promise<T | null> {
+  const col = await getSettingsCollection();
+  const doc = await col.findOne({ key });
+  return (doc?.value as T) ?? null;
+}
+
+export async function setSetting(key: string, value: unknown): Promise<void> {
+  const col = await getSettingsCollection();
+  await col.updateOne({ key }, { $set: { key, value, updatedAt: new Date().toISOString() } }, { upsert: true });
+}
+
 export { ObjectId };
