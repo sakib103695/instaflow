@@ -27,6 +27,8 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENROUTER_STRUCTURING_MODEL: ${OPENROUTER_STRUCTURING_MODEL}
       # NEXT_PUBLIC_VAPI_PUBLIC_KEY is baked into the image at build time
       # (because Next inlines NEXT_PUBLIC_* vars). Setting it here too is
       # harmless and makes it easy to verify with `docker exec env`.

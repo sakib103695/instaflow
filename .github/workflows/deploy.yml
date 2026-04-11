@@ -11,6 +11,8 @@
 #   ADMIN_PASSWORD            Gates /admin and /api/clients
 #   MONGO_APP_PASSWORD        Mongo root + app user password (single user for simplicity)
 #   ELEVENLABS_API_KEY        Server-side, for the admin voice library page
+#   OPENROUTER_API_KEY        Server-side, cheaper LLM for bulk structuring (optional)
+#   OPENROUTER_STRUCTURING_MODEL  Override model id (defaults to gemini-2.0-flash-001)
 
 name: Deploy
 
@@ -93,6 +95,8 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           NEXT_PUBLIC_VAPI_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPI_PUBLIC_KEY }}
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_STRUCTURING_MODEL: ${{ secrets.OPENROUTER_STRUCTURING_MODEL }}
         run: |
           # Write the production .env on the runner; scp it to the VPS in the
           # next step. Using a separate step keeps the secrets out of the SSH
@@ -104,6 +108,8 @@ jobs:
             echo "GEMINI_API_KEY=${GEMINI_API_KEY}"
             echo "NEXT_PUBLIC_VAPI_PUBLIC_KEY=${NEXT_PUBLIC_VAPI_PUBLIC_KEY}"
             echo "ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}"
+            echo "OPENROUTER_API_KEY=${OPENROUTER_API_KEY}"
+            echo "OPENROUTER_STRUCTURING_MODEL=${OPENROUTER_STRUCTURING_MODEL}"
           } > /tmp/instaflow.env
 
       - name: Checkout (for compose file)

@@ -3,14 +3,61 @@ import { STRUCTURING_INSTRUCTION } from './agentPrompt';
 import { EMPTY_STRUCTURED_CONTEXT, type StructuredContext } from './clientTypes';
 
 /**
- * Server-side Gemini client for the structuring step. We use the larger Pro
- * model here because the call happens once at onboarding (not per call) and
- * accuracy matters more than latency.
+ * Provider selection for the one-shot structuring step.
+ *
+ * Priority:
+ *   1. OpenRouter if OPENROUTER_API_KEY is set — lets us swap in any cheap
+ *      model via OPENROUTER_STRUCTURING_MODEL (defaults to Gemini 2.0 Flash,
+ *      ~12x cheaper than Gemini 2.5 Pro for near-equal JSON quality).
+ *   2. Direct Google Gemini API if GEMINI_API_KEY is set — legacy path.
+ *
+ * The structuring step is called exactly once per client at onboarding, so
+ * accuracy matters more than latency, but at 5k clients the per-call cost
+ * dominates and OpenRouter's cheaper models save hundreds of dollars.
  */
 function getServerGemini() {
   const key = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
   if (!key) throw new Error('Missing GEMINI_API_KEY');
   return new GoogleGenAI({ apiKey: key });
+}
+
+const DEFAULT_OPENROUTER_MODEL = 'google/gemini-2.0-flash-001';
+
+async function structureViaOpenRouter(rawText: string): Promise<StructuredContext> {
+  const apiKey = process.env.OPENROUTER_API_KEY!.trim();
+  const model = (process.env.OPENROUTER_STRUCTURING_MODEL || DEFAULT_OPENROUTER_MODEL).trim();
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+      // Optional ranking headers OpenRouter asks for.
+      'HTTP-Referer': 'https://flow.instaquirk.tech',
+      'X-Title': 'Instaflow',
+    },
+    body: JSON.stringify({
+      model,
+      // JSON mode is honored by gemini-flash, deepseek, llama, etc. via OR.
+      response_format: { type: 'json_object' },
+      temperature: 0.2,
+      messages: [
+        {
+          role: 'system',
+          content: STRUCTURING_INSTRUCTION,
+        },
+        {
+          role: 'user',
+          content: '=== SOURCE CONTENT ===\n\n' + rawText.slice(0, 180_000),
+        },
+      ],
+    }),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`OpenRouter ${res.status}: ${text.slice(0, 300)}`);
+  }
+  const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+  return normalize(tryParseJson(json.choices?.[0]?.message?.content || ''));
 }
 
 function tryParseJson(raw: string): StructuredContext | null {
@@ -46,6 +93,11 @@ function normalize(partial: Partial<StructuredContext> | null): StructuredContex
 }
 
 export async function structureContextFromRawText(rawText: string): Promise<StructuredContext> {
+  // Prefer OpenRouter when configured — massively cheaper for bulk onboarding.
+  if (process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY !== 'REPLACE_ME') {
+    return structureViaOpenRouter(rawText);
+  }
+
   const ai = getServerGemini();
   // gemini-2.5-pro is the accuracy/quality choice for this one-shot extraction.
   const response = await ai.models.generateContent({
