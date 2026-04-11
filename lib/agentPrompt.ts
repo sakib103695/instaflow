@@ -1,5 +1,6 @@
 import { END_CALL_SIGNAL, CALL_CONNECTED_CUE } from '@/constants';
 import type { StructuredContext } from './clientTypes';
+import { getSetting } from './mongodb';
 
 /**
  * The shared "soul" of every Instaflow agent. Per-client structured context
@@ -87,11 +88,50 @@ This is the only source of truth about the business. Everything below is what YO
  * The structuredContext block is rendered as a clear, readable knowledge sheet
  * — not JSON — because LLMs follow plain prose more reliably than schema dumps.
  */
+/**
+ * Resolve the "soul" prompt. Admin override in the settings collection
+ * wins; otherwise the hardcoded BASE_AGENT_INSTRUCTION is used. Synchronous
+ * callers (backfill, tests) can keep using BASE_AGENT_INSTRUCTION directly.
+ */
+export async function resolveBasePrompt(): Promise<string> {
+  try {
+    const override = (await getSetting<string>('basePrompt'))?.trim();
+    if (override) return override;
+  } catch {
+    // Mongo unreachable — fall through to default.
+  }
+  return BASE_AGENT_INSTRUCTION;
+}
+
+export async function resolveStructuringPrompt(): Promise<string> {
+  try {
+    const override = (await getSetting<string>('structuringPrompt'))?.trim();
+    if (override) return override;
+  } catch {}
+  return STRUCTURING_INSTRUCTION;
+}
+
+export async function composeSystemInstructionAsync(
+  ctx: StructuredContext,
+  greeting: string,
+): Promise<string> {
+  const base = await resolveBasePrompt();
+  return composeFromBase(base, ctx, greeting);
+}
+
 export function composeSystemInstruction(
   ctx: StructuredContext,
   greeting: string,
 ): string {
-  const lines: string[] = [BASE_AGENT_INSTRUCTION];
+  return composeFromBase(BASE_AGENT_INSTRUCTION, ctx, greeting);
+}
+
+function composeFromBase(
+  base: string,
+  ctx: StructuredContext,
+  greeting: string,
+): string {
+  const lines: string[] = [base];
 
   lines.push('');
   lines.push(`## Business`);

@@ -41,6 +41,13 @@ type SettingsDoc = {
   openrouterApiKey?: SecretState;
   elevenlabsApiKey?: SecretState;
   geminiApiKey?: SecretState;
+  basePrompt?: string | null;
+  structuringPrompt?: string | null;
+};
+
+type PromptDefaults = {
+  basePrompt: string;
+  structuringPrompt: string;
 };
 
 function formatPrice(v: number | null): string {
@@ -152,6 +159,15 @@ export default function AdminSettingsPage() {
   const [savingModel, setSavingModel] = useState(false);
   const [search, setSearch] = useState('');
 
+  // Prompt editor state
+  const [defaults, setDefaults] = useState<PromptDefaults | null>(null);
+  const [basePromptDraft, setBasePromptDraft] = useState('');
+  const [basePromptSaved, setBasePromptSaved] = useState('');
+  const [savingBase, setSavingBase] = useState(false);
+  const [structuringDraft, setStructuringDraft] = useState('');
+  const [structuringSaved, setStructuringSaved] = useState('');
+  const [savingStructuring, setSavingStructuring] = useState(false);
+
   const loadSettings = async () => {
     const res = await fetch('/api/admin/settings');
     if (res.ok) {
@@ -160,6 +176,12 @@ export default function AdminSettingsPage() {
       const current = (json.openrouterModel as string) || undefined;
       setSelectedModel(current);
       setSavedModel(current);
+      const base = (json.basePrompt as string) || '';
+      setBasePromptDraft(base);
+      setBasePromptSaved(base);
+      const structuring = (json.structuringPrompt as string) || '';
+      setStructuringDraft(structuring);
+      setStructuringSaved(structuring);
     }
   };
 
@@ -168,17 +190,47 @@ export default function AdminSettingsPage() {
     setModelError(null);
     try {
       await loadSettings();
-      const modelsRes = await fetch('/api/admin/openrouter/models');
+      const [modelsRes, defaultsRes] = await Promise.all([
+        fetch('/api/admin/openrouter/models'),
+        fetch('/api/admin/prompt-defaults'),
+      ]);
       if (!modelsRes.ok) {
         const err = await modelsRes.json().catch(() => ({}));
         throw new Error(err.error || `Models fetch failed (${modelsRes.status})`);
       }
       const modelsJson = await modelsRes.json();
       setModels(modelsJson.models || []);
+      if (defaultsRes.ok) setDefaults(await defaultsRes.json());
     } catch (err) {
       setModelError(err instanceof Error ? err.message : 'Failed to load');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const savePrompt = async (
+    key: 'basePrompt' | 'structuringPrompt',
+    value: string,
+    setSaving: (v: boolean) => void,
+    onSaved: (v: string) => void,
+  ) => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: value }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Save failed');
+      }
+      onSaved(value);
+      antdMessage.success(value ? 'Prompt saved.' : 'Reset to default.');
+    } catch (err) {
+      antdMessage.error(err instanceof Error ? err.message : 'Save failed');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -337,6 +389,119 @@ export default function AdminSettingsPage() {
               />
             </Space>
           )}
+
+          {/* ===== Prompts ===== */}
+          <Divider style={{ borderColor: 'rgba(91,33,182,0.3)' }}>
+            <Text type="secondary">Agent prompts</Text>
+          </Divider>
+          <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+            Override the hardcoded prompts without redeploying. Leave a field empty to use the
+            default. <strong>Structuring prompt</strong> only affects NEW clients when they get
+            scraped. <strong>Base prompt</strong> affects NEW clients on scrape; to apply it to
+            existing clients, re-run the scrape on each client from its edit page.
+          </Paragraph>
+
+          <div>
+            <Text strong style={{ color: 'rgba(255,255,255,0.92)', display: 'block', marginBottom: 4 }}>
+              Structuring prompt
+            </Text>
+            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
+              Instruction given to the LLM to convert raw scraped website text into the
+              client-specific structured JSON (business info, services, FAQs, etc.).
+            </Text>
+            <Input.TextArea
+              value={structuringDraft}
+              onChange={(e) => setStructuringDraft(e.target.value)}
+              placeholder={defaults?.structuringPrompt || 'Loading default…'}
+              autoSize={{ minRows: 8, maxRows: 24 }}
+              style={{ fontFamily: 'monospace', fontSize: 12 }}
+            />
+            <Space style={{ marginTop: 8 }}>
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                loading={savingStructuring}
+                disabled={structuringDraft === structuringSaved}
+                onClick={() =>
+                  savePrompt('structuringPrompt', structuringDraft, setSavingStructuring, (v) => {
+                    setStructuringSaved(v);
+                  })
+                }
+              >
+                Save structuring prompt
+              </Button>
+              <Button
+                disabled={!defaults || structuringDraft === (defaults?.structuringPrompt || '')}
+                onClick={() => setStructuringDraft(defaults?.structuringPrompt || '')}
+              >
+                Load default into editor
+              </Button>
+              {structuringSaved && (
+                <Button
+                  danger
+                  onClick={() =>
+                    savePrompt('structuringPrompt', '', setSavingStructuring, (v) => {
+                      setStructuringSaved(v);
+                      setStructuringDraft('');
+                    })
+                  }
+                >
+                  Reset to default (clear override)
+                </Button>
+              )}
+            </Space>
+          </div>
+
+          <div>
+            <Text strong style={{ color: 'rgba(255,255,255,0.92)', display: 'block', marginBottom: 4 }}>
+              Base agent prompt
+            </Text>
+            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
+              The shared &quot;soul&quot; prompt (identity, tone, pacing rules, END_CALL protocol) injected at
+              the top of every client&apos;s system instruction. The structured knowledge appears below it.
+            </Text>
+            <Input.TextArea
+              value={basePromptDraft}
+              onChange={(e) => setBasePromptDraft(e.target.value)}
+              placeholder={defaults?.basePrompt || 'Loading default…'}
+              autoSize={{ minRows: 10, maxRows: 30 }}
+              style={{ fontFamily: 'monospace', fontSize: 12 }}
+            />
+            <Space style={{ marginTop: 8 }}>
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                loading={savingBase}
+                disabled={basePromptDraft === basePromptSaved}
+                onClick={() =>
+                  savePrompt('basePrompt', basePromptDraft, setSavingBase, (v) => {
+                    setBasePromptSaved(v);
+                  })
+                }
+              >
+                Save base prompt
+              </Button>
+              <Button
+                disabled={!defaults || basePromptDraft === (defaults?.basePrompt || '')}
+                onClick={() => setBasePromptDraft(defaults?.basePrompt || '')}
+              >
+                Load default into editor
+              </Button>
+              {basePromptSaved && (
+                <Button
+                  danger
+                  onClick={() =>
+                    savePrompt('basePrompt', '', setSavingBase, (v) => {
+                      setBasePromptSaved(v);
+                      setBasePromptDraft('');
+                    })
+                  }
+                >
+                  Reset to default (clear override)
+                </Button>
+              )}
+            </Space>
+          </div>
 
           {/* ===== Model picker ===== */}
           <Divider style={{ borderColor: 'rgba(91,33,182,0.3)' }}>

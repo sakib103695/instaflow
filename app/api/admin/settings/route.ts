@@ -14,6 +14,10 @@ const KNOWN_KEYS = [
   'openrouterApiKey',
   'elevenlabsApiKey',
   'geminiApiKey',
+  // Prompt overrides. Empty/unset means "use the hardcoded default in
+  // lib/agentPrompt.ts". Users can tweak these at runtime without redeploy.
+  'basePrompt',
+  'structuringPrompt',
 ] as const;
 
 /** Keys whose value is a secret — GET returns a mask instead of the raw string. */

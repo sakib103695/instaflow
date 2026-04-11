@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getClientsCollection } from '@/lib/mongodb';
 import { scrapeSite } from '@/lib/scraper';
 import { structureContextFromRawText } from '@/lib/structureContext';
-import { composeSystemInstruction } from '@/lib/agentPrompt';
+import { composeSystemInstructionAsync } from '@/lib/agentPrompt';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -76,7 +76,7 @@ export async function POST(req: Request, { params }: RouteCtx) {
         ? client.greeting
         : `Hi, thanks for calling ${businessName} — this is ${structuredContext.personaName || 'Mia'}, how can I help you today?`;
 
-    const systemPrompt = composeSystemInstruction(structuredContext, greeting);
+    const systemPrompt = await composeSystemInstructionAsync(structuredContext, greeting);
 
     await col.updateOne(
       { slug },

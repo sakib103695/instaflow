@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { STRUCTURING_INSTRUCTION } from './agentPrompt';
+import { resolveStructuringPrompt } from './agentPrompt';
 import { EMPTY_STRUCTURED_CONTEXT, type StructuredContext } from './clientTypes';
 import { getSetting } from './mongodb';
 import { resolveSecret } from './secrets';
@@ -24,6 +24,7 @@ async function getServerGemini() {
 }
 
 async function structureViaOpenRouter(rawText: string, model: string, apiKey: string): Promise<StructuredContext> {
+  const instruction = await resolveStructuringPrompt();
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -41,7 +42,7 @@ async function structureViaOpenRouter(rawText: string, model: string, apiKey: st
       messages: [
         {
           role: 'system',
-          content: STRUCTURING_INSTRUCTION,
+          content: instruction,
         },
         {
           role: 'user',
@@ -101,6 +102,7 @@ export async function structureContextFromRawText(rawText: string): Promise<Stru
   }
 
   const ai = await getServerGemini();
+  const instruction = await resolveStructuringPrompt();
   // gemini-2.5-pro is the accuracy/quality choice for this one-shot extraction.
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-pro',
@@ -108,7 +110,7 @@ export async function structureContextFromRawText(rawText: string): Promise<Stru
       {
         role: 'user',
         parts: [
-          { text: STRUCTURING_INSTRUCTION },
+          { text: instruction },
           { text: '\n\n=== SOURCE CONTENT ===\n\n' + rawText.slice(0, 180_000) },
         ],
       },
