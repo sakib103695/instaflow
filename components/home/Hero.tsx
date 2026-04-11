@@ -170,10 +170,7 @@ interface HeroCardProps {
   setSelectedVoice: (v: (typeof AVAILABLE_VOICES)[0]) => void;
   isActive: boolean;
   isConnecting: boolean;
-  isPreviewing: boolean;
   error: string | null;
-  transcription: { role: 'user' | 'agent'; text: string }[];
-  previewVoice: () => void;
   startConversation: () => void;
   stopConversation: () => void;
 }
@@ -183,10 +180,7 @@ function HeroCard({
   setSelectedVoice,
   isActive,
   isConnecting,
-  isPreviewing,
   error,
-  transcription,
-  previewVoice,
   startConversation,
   stopConversation,
 }: HeroCardProps) {
@@ -238,25 +232,6 @@ function HeroCard({
               <ArrowDown />
             </span>
           </div>
-          <button
-            type="button"
-            onClick={previewVoice}
-            disabled={isActive || isConnecting || isPreviewing}
-            className="shrink-0 bg-[#8c21ff] hover:bg-[#7a1ae6] disabled:opacity-50 rounded-lg h-10 px-5 flex items-center justify-center gap-2 transition-colors"
-          >
-            {isPreviewing ? (
-              <span className="size-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <img
-                src="/assets/icons/play-icon.svg"
-                alt="Play"
-                className="w-4 h-4 object-contain"
-              />
-            )}
-            <span className="text-white text-xs font-semibold uppercase tracking-wide">
-              Preview
-            </span>
-          </button>
         </div>
       </div>
 
@@ -325,25 +300,6 @@ function HeroCard({
         No credit card. Live test in under 60 seconds.
       </p>
 
-      {isActive && transcription.length > 0 && (
-        <div className="transcription-scroll relative z-10 pt-4 border-t border-white/10 space-y-2 max-h-40 overflow-y-auto">
-          {transcription.slice(-8).map((entry, idx) => (
-            <div
-              key={idx}
-              className={`p-3 rounded-xl text-sm ${
-                entry.role === 'agent'
-                  ? "bg-[#8c21ff]/20 border border-[#8c21ff]/30 text-left"
-                  : "bg-white/10 border border-white/20 text-right ml-6"
-              }`}
-            >
-              <p className="text-white/70 text-xs font-medium mb-0.5">
-                {entry.role === 'agent' ? selectedVoice.label : 'You'}
-              </p>
-              <p className="text-white/90 leading-snug">{entry.text}</p>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -381,12 +337,9 @@ export function Hero({ agentConfig }: { agentConfig: AgentConfig }) {
   const {
     isActive,
     isConnecting,
-    isPreviewing,
     error,
-    transcription,
     selectedVoice,
     setSelectedVoice,
-    previewVoice,
     startConversation,
     stopConversation,
   } = useVapiAgent({
@@ -409,10 +362,7 @@ export function Hero({ agentConfig }: { agentConfig: AgentConfig }) {
           setSelectedVoice={setSelectedVoice}
           isActive={isActive}
           isConnecting={isConnecting}
-          isPreviewing={isPreviewing}
           error={error}
-          transcription={transcription}
-          previewVoice={previewVoice}
           startConversation={startConversation}
           stopConversation={stopConversation}
         />

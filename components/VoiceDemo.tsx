@@ -9,12 +9,9 @@ export default function VoiceDemo() {
   const {
     isActive,
     isConnecting,
-    isPreviewing,
     isAiSpeaking,
-    transcription,
     selectedVoice,
     setSelectedVoice,
-    previewVoice,
     startConversation,
     stopConversation,
   } = useVapiAgent({
@@ -70,31 +67,6 @@ export default function VoiceDemo() {
               </div>
             </div>
           </div>
-          <div className="flex items-end">
-            <button
-              onClick={previewVoice}
-              disabled={isActive || isConnecting || isPreviewing}
-              className="h-[54px] px-6 rounded-2xl border border-violet-500/30 text-violet-400 font-bold hover:bg-violet-500/10 transition-all flex items-center gap-2 disabled:opacity-30 shadow-lg"
-            >
-              {isPreviewing ? (
-                <div className="w-4 h-4 border-2 border-violet-400 border-t-transparent animate-spin rounded-full" />
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="w-4 h-4"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              )}
-              Preview
-            </button>
-          </div>
         </div>
 
         <AudioVisualizer isActive={isActive} isSpeaking={isAiSpeaking} />
@@ -145,28 +117,6 @@ export default function VoiceDemo() {
         </div>
       </div>
 
-      {isActive && transcription.length > 0 && (
-        <div className="mt-16 pt-10 border-t border-white/5">
-          <div className="space-y-3 max-h-72 overflow-y-auto pr-2 scrollbar-hide">
-            {transcription.map((entry, idx) => {
-              const isAgent = entry.role === 'agent';
-              return (
-                <div key={idx} className={`flex ${isAgent ? 'justify-start' : 'justify-end'}`}>
-                  <div
-                    className={`max-w-[78%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-                      isAgent
-                        ? 'bg-violet-600/15 border border-violet-500/20 text-slate-100 rounded-bl-md'
-                        : 'bg-white text-black rounded-br-md'
-                    }`}
-                  >
-                    {entry.text}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
