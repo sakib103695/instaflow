@@ -1,6 +1,7 @@
 import Home from '@/views/Home';
 import { getClientForPage } from '@/lib/getClient';
 import { INSTAFLOW_SYSTEM_INSTRUCTION, DEFAULT_VOICE_ID } from '@/constants';
+import { loadVoicesForPicker } from '@/lib/voices';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -20,7 +21,10 @@ type PageProps = {
  */
 export default async function Page({ searchParams }: PageProps) {
   const { client: requestedSlug } = await searchParams;
-  const client = await getClientForPage(requestedSlug);
+  const [client, availableVoices] = await Promise.all([
+    getClientForPage(requestedSlug),
+    loadVoicesForPicker(),
+  ]);
 
   const agentConfig = client
     ? {
@@ -38,5 +42,5 @@ export default async function Page({ searchParams }: PageProps) {
         voiceId: DEFAULT_VOICE_ID,
       };
 
-  return <Home agentConfig={agentConfig} />;
+  return <Home agentConfig={agentConfig} availableVoices={availableVoices} />;
 }

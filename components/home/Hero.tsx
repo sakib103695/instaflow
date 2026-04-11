@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import svgPaths from "@/public/assets/data/svgPaths";
 import { MessageCircle, Mic } from "lucide-react";
 import { useVapiAgent } from "@/hooks/useVapiAgent";
-import { AVAILABLE_VOICES } from "@/constants";
+import type { VoiceOption } from "@/constants";
 import type { AgentConfig } from "@/lib/clientTypes";
 
 const ROTATING_WORDS = ["Spa", "MedSpa", "Barbershop"];
@@ -166,8 +166,9 @@ function VoiceLevelBars({ isActive }: { isActive: boolean }) {
 
 /* ================= MAIN GLASS CARD (original design + functionality) ================= */
 interface HeroCardProps {
-  selectedVoice: (typeof AVAILABLE_VOICES)[0];
-  setSelectedVoice: (v: (typeof AVAILABLE_VOICES)[0]) => void;
+  voices: VoiceOption[];
+  selectedVoice: VoiceOption;
+  setSelectedVoice: (v: VoiceOption) => void;
   isActive: boolean;
   isConnecting: boolean;
   error: string | null;
@@ -176,6 +177,7 @@ interface HeroCardProps {
 }
 
 function HeroCard({
+  voices,
   selectedVoice,
   setSelectedVoice,
   isActive,
@@ -213,12 +215,12 @@ function HeroCard({
               disabled={isActive || isConnecting}
               value={selectedVoice.id}
               onChange={(e) => {
-                const v = AVAILABLE_VOICES.find((x) => x.id === e.target.value);
+                const v = voices.find((x) => x.id === e.target.value);
                 if (v) setSelectedVoice(v);
               }}
               className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm outline-none focus:border-[#8c21ff] cursor-pointer appearance-none pr-10"
             >
-              {AVAILABLE_VOICES.map((v) => (
+              {voices.map((v) => (
                 <option
                   key={v.id}
                   value={v.id}
@@ -333,11 +335,18 @@ function RightBubble() {
 }
 
 /* ================= COMBINED HERO ================= */
-export function Hero({ agentConfig }: { agentConfig: AgentConfig }) {
+export function Hero({
+  agentConfig,
+  availableVoices,
+}: {
+  agentConfig: AgentConfig;
+  availableVoices?: VoiceOption[];
+}) {
   const {
     isActive,
     isConnecting,
     error,
+    voices,
     selectedVoice,
     setSelectedVoice,
     startConversation,
@@ -346,6 +355,7 @@ export function Hero({ agentConfig }: { agentConfig: AgentConfig }) {
     systemInstruction: agentConfig.systemPrompt,
     greeting: agentConfig.greeting,
     voiceId: agentConfig.voiceId,
+    availableVoices,
     saveMeta: { clientSlug: agentConfig.slug },
   });
 
@@ -358,6 +368,7 @@ export function Hero({ agentConfig }: { agentConfig: AgentConfig }) {
       <div className="relative z-10 flex flex-col items-center gap-10 w-full max-w-4xl">
         <HeroHeadline />
         <HeroCard
+          voices={voices}
           selectedVoice={selectedVoice}
           setSelectedVoice={setSelectedVoice}
           isActive={isActive}

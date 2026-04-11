@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ConfigProvider, Card, Form, Input, Button, Select, Typography, Space, message, theme, Alert } from 'antd';
 import type { ThemeConfig } from 'antd';
-import { APP_CONFIG, AVAILABLE_VOICES } from '@/constants';
+import { APP_CONFIG } from '@/constants';
+import { useAvailableVoices } from '@/hooks/useAvailableVoices';
 
 const { darkAlgorithm } = theme;
 const { Title, Text } = Typography;
@@ -25,6 +26,7 @@ export default function NewClientPage() {
   const [creating, setCreating] = useState(false);
   const [scraping, setScraping] = useState(false);
   const [createdSlug, setCreatedSlug] = useState<string | null>(null);
+  const availableVoices = useAvailableVoices();
 
   /**
    * Two-step flow: create the client shell, then trigger the scrape pipeline.
@@ -129,9 +131,9 @@ export default function NewClientPage() {
               <Form.Item label="Voice" name="voiceId">
                 <Select
                   size="large"
-                  options={AVAILABLE_VOICES.map((v) => ({
+                  options={availableVoices.map((v) => ({
                     value: v.id,
-                    label: `${v.label} — ${v.description}`,
+                    label: v.description ? `${v.label} — ${v.description}` : v.label,
                   }))}
                 />
               </Form.Item>

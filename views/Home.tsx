@@ -12,16 +12,18 @@ import Header from "@/components/home/Header";
 import { Testimonial } from "@/components/home/Testimonial";
 import FinalCTA from "@/components/home/FinalCTA";
 import type { AgentConfig } from "@/lib/clientTypes";
+import type { VoiceOption } from "@/constants";
 
 type HomeProps = {
   agentConfig: AgentConfig;
+  availableVoices?: VoiceOption[];
 };
 
-export default function Home({ agentConfig }: HomeProps) {
+export default function Home({ agentConfig, availableVoices }: HomeProps) {
   return (
     <div className="bg-black text-white">
       <Header />
-      <Hero agentConfig={agentConfig} />
+      <Hero agentConfig={agentConfig} availableVoices={availableVoices} />
       <ConversionProofStrip />
       <RevenueCalculator />
       <EffortlessGrowth />

@@ -1,15 +1,16 @@
 "use client";
-import { AVAILABLE_VOICES, INSTAFLOW_SYSTEM_INSTRUCTION } from '../constants';
+import { INSTAFLOW_SYSTEM_INSTRUCTION, type VoiceOption } from '../constants';
 import { useVapiAgent } from '../hooks/useVapiAgent';
 import AudioVisualizer from './AudioVisualizer';
 
 const DEMO_GREETING = "Hi, thanks for calling GlowLift Medspa — this is Mia, how can I help you today?";
 
-export default function VoiceDemo() {
+export default function VoiceDemo({ availableVoices }: { availableVoices?: VoiceOption[] } = {}) {
   const {
     isActive,
     isConnecting,
     isAiSpeaking,
+    voices,
     selectedVoice,
     setSelectedVoice,
     startConversation,
@@ -17,6 +18,7 @@ export default function VoiceDemo() {
   } = useVapiAgent({
     systemInstruction: INSTAFLOW_SYSTEM_INSTRUCTION,
     greeting: DEMO_GREETING,
+    availableVoices,
   });
 
   return (
@@ -40,11 +42,11 @@ export default function VoiceDemo() {
                 disabled={isActive || isConnecting}
                 value={selectedVoice.id}
                 onChange={(e) =>
-                  setSelectedVoice(AVAILABLE_VOICES.find((v) => v.id === e.target.value)!)
+                  setSelectedVoice(voices.find((v) => v.id === e.target.value)!)
                 }
                 className="w-full bg-white/5 border border-white/10 text-white rounded-2xl px-5 py-3.5 outline-none focus:border-violet-500 transition-all appearance-none cursor-pointer font-medium"
               >
-                {AVAILABLE_VOICES.map((v) => (
+                {voices.map((v) => (
                   <option key={v.id} value={v.id} className="bg-slate-900">
                     {v.label}
                   </option>

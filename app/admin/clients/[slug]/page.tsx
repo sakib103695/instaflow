@@ -19,7 +19,8 @@ import {
   Skeleton,
 } from 'antd';
 import type { ThemeConfig } from 'antd';
-import { APP_CONFIG, AVAILABLE_VOICES } from '@/constants';
+import { APP_CONFIG } from '@/constants';
+import { useAvailableVoices } from '@/hooks/useAvailableVoices';
 import type { ClientDoc, StructuredContext } from '@/lib/clientTypes';
 
 const { darkAlgorithm } = theme;
@@ -262,6 +263,7 @@ function BasicsTab({
   onSave: (patch: Partial<ClientDoc>) => void;
 }) {
   const [form] = Form.useForm();
+  const availableVoices = useAvailableVoices();
   return (
     <Form
       layout="vertical"
@@ -283,7 +285,10 @@ function BasicsTab({
       <Form.Item label="Voice" name="voiceId">
         <Select
           size="large"
-          options={AVAILABLE_VOICES.map((v) => ({ value: v.id, label: `${v.label} — ${v.description}` }))}
+          options={availableVoices.map((v) => ({
+            value: v.id,
+            label: v.description ? `${v.label} — ${v.description}` : v.label,
+          }))}
         />
       </Form.Item>
       <Form.Item

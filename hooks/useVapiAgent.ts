@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Vapi from '@vapi-ai/web';
-import { VAPI_PUBLIC_KEY, AVAILABLE_VOICES, DEFAULT_VOICE_ID } from '../constants';
+import { VAPI_PUBLIC_KEY, AVAILABLE_VOICES, DEFAULT_VOICE_ID, type VoiceOption } from '../constants';
 import { buildInlineAssistant } from '../lib/vapiAssistant';
 
 export type TranscriptEntry = { role: 'user' | 'agent'; text: string };
@@ -30,6 +30,12 @@ export type UseVapiAgentOptions = {
    * does NOT lock the picker.
    */
   voiceId?: string;
+  /**
+   * Voice catalog the picker exposes. Defaults to the hardcoded
+   * AVAILABLE_VOICES so legacy callers keep working; server pages should
+   * pass the curated list loaded via loadVoicesForPicker().
+   */
+  availableVoices?: VoiceOption[];
   /** Where to POST the saved conversation (defaults to /api/conversations). */
   saveEndpoint?: string;
   /** Extra metadata persisted with the conversation. */
@@ -49,7 +55,17 @@ export type UseVapiAgentOptions = {
  * editing a client's prompt in admin takes effect on the very next call.
  */
 export function useVapiAgent(opts: UseVapiAgentOptions) {
-  const { systemInstruction, greeting, voiceId, saveEndpoint = '/api/conversations', saveMeta } = opts;
+  const {
+    systemInstruction,
+    greeting,
+    voiceId,
+    availableVoices,
+    saveEndpoint = '/api/conversations',
+    saveMeta,
+  } = opts;
+  // Effective catalog: caller-provided list if non-empty, else the hardcoded
+  // fallback. Memoized on the input identity so setSelectedVoice stays stable.
+  const voices = availableVoices && availableVoices.length > 0 ? availableVoices : AVAILABLE_VOICES;
 
   const [isActive, setIsActive] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -64,11 +80,11 @@ export function useVapiAgent(opts: UseVapiAgentOptions) {
    * choice and never reset it from props (parent re-renders would otherwise
    * snap the picker back to the default).
    */
-  const [selectedVoiceState, setSelectedVoiceState] = useState(
-    () => AVAILABLE_VOICES.find((v) => v.id === (voiceId || DEFAULT_VOICE_ID)) ?? AVAILABLE_VOICES[0],
+  const [selectedVoiceState, setSelectedVoiceState] = useState<VoiceOption>(
+    () => voices.find((v) => v.id === (voiceId || DEFAULT_VOICE_ID)) ?? voices[0],
   );
   const selectedVoice = selectedVoiceState;
-  const setSelectedVoice = useCallback((v: (typeof AVAILABLE_VOICES)[number]) => {
+  const setSelectedVoice = useCallback((v: VoiceOption) => {
     setSelectedVoiceState(v);
   }, []);
 
@@ -319,6 +335,7 @@ export function useVapiAgent(opts: UseVapiAgentOptions) {
     isThinking,
     error,
     transcription,
+    voices,
     selectedVoice,
     setSelectedVoice,
     previewVoice,
