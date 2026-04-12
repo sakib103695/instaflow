@@ -10,6 +10,7 @@ import {
   Space,
   Skeleton,
   Tag,
+  Table,
   message as antdMessage,
   Alert,
 } from 'antd';
@@ -272,92 +273,93 @@ export default function AdminVoicesPage() {
           {loading ? (
             <Skeleton active paragraph={{ rows: 8 }} />
           ) : (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-                gap: 16,
-              }}
-            >
-              {filteredRows.map((row) => {
-                const isPlaying = playingId === row.id;
-                return (
-                  <Card
-                    key={row.id}
-                    size="small"
-                    style={{
-                      background: row.enabled ? 'rgba(91,33,182,0.10)' : '#1a0a2e',
-                      border: row.enabled
-                        ? '1px solid rgba(140,33,255,0.55)'
-                        : '1px solid rgba(91,33,182,0.25)',
-                    }}
-                    styles={{ body: { padding: 16 } }}
-                  >
-                    <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                        <div style={{ minWidth: 0 }}>
-                          <Text strong style={{ color: 'rgba(255,255,255,0.95)', display: 'block' }}>
-                            {row.libraryName}
-                          </Text>
-                          <Text type="secondary" style={{ fontSize: 11 }}>
-                            {row.category || 'voice'} · {row.id.slice(0, 8)}…
-                          </Text>
-                        </div>
-                        <Switch
-                          checked={row.enabled}
-                          onChange={(checked) => updateRow(row.id, { enabled: checked })}
-                          checkedChildren="ON"
-                          unCheckedChildren="OFF"
-                        />
-                      </div>
-
+            <Table
+              rowKey="id"
+              dataSource={filteredRows}
+              pagination={{ pageSize: 12, size: 'small' }}
+              size="middle"
+              columns={[
+                {
+                  title: 'Voice',
+                  key: 'name',
+                  width: 220,
+                  render: (_, row: Row) => (
+                    <div>
+                      <Text strong style={{ color: 'rgba(255,255,255,0.95)' }}>
+                        {row.libraryName}
+                      </Text>
                       {Object.keys(row.labels).length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                          {Object.entries(row.labels).slice(0, 4).map(([k, v]) => (
-                            <Tag key={k} style={{ fontSize: 10, marginRight: 0 }}>
+                        <div style={{ marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                          {Object.entries(row.labels).slice(0, 3).map(([k, v]) => (
+                            <Tag key={k} style={{ fontSize: 10, margin: 0, lineHeight: '16px' }}>
                               {String(v)}
                             </Tag>
                           ))}
                         </div>
                       )}
-
+                    </div>
+                  ),
+                },
+                {
+                  title: 'Preview',
+                  key: 'preview',
+                  width: 120,
+                  align: 'center' as const,
+                  render: (_, row: Row) => {
+                    const isPlaying = playingId === row.id;
+                    return (
                       <Button
-                        block
+                        size="small"
+                        type={isPlaying ? 'primary' : 'default'}
                         icon={isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
                         onClick={() => playPreview(row)}
                         disabled={!row.previewUrl}
                       >
-                        {isPlaying ? 'Stop preview' : 'Play preview'}
+                        {isPlaying ? 'Stop' : 'Play'}
                       </Button>
-
-                      <div>
-                        <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>
-                          Display label
-                        </Text>
-                        <Input
-                          size="small"
-                          value={row.label}
-                          onChange={(e) => updateRow(row.id, { label: e.target.value })}
-                          placeholder={row.libraryName}
-                        />
-                      </div>
-                      <div>
-                        <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>
-                          Description
-                        </Text>
-                        <Input.TextArea
-                          size="small"
-                          rows={2}
-                          value={row.description}
-                          onChange={(e) => updateRow(row.id, { description: e.target.value })}
-                          placeholder="Shown under the voice name in the picker"
-                        />
-                      </div>
-                    </Space>
-                  </Card>
-                );
-              })}
-            </div>
+                    );
+                  },
+                },
+                {
+                  title: 'Display label',
+                  key: 'label',
+                  width: 200,
+                  render: (_, row: Row) => (
+                    <Input
+                      size="small"
+                      value={row.label}
+                      onChange={(e) => updateRow(row.id, { label: e.target.value })}
+                      placeholder={row.libraryName}
+                    />
+                  ),
+                },
+                {
+                  title: 'Description',
+                  key: 'description',
+                  render: (_, row: Row) => (
+                    <Input
+                      size="small"
+                      value={row.description}
+                      onChange={(e) => updateRow(row.id, { description: e.target.value })}
+                      placeholder="Shown in the public voice picker"
+                    />
+                  ),
+                },
+                {
+                  title: 'Enabled',
+                  key: 'enabled',
+                  width: 80,
+                  align: 'center' as const,
+                  render: (_, row: Row) => (
+                    <Switch
+                      checked={row.enabled}
+                      onChange={(checked) => updateRow(row.id, { enabled: checked })}
+                      size="small"
+                    />
+                  ),
+                },
+              ]}
+            />
           )}
 
           {!loading && !loadError && filteredRows.length === 0 && (
