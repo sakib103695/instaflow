@@ -3,28 +3,10 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ConfigProvider, Table, Card, Typography, Button, Space, Skeleton, theme, Popconfirm, message, Tag, Tooltip } from 'antd';
-import type { ThemeConfig } from 'antd';
+import { Table, Card, Typography, Button, Space, Skeleton, Popconfirm, message, Tag, Tooltip } from 'antd';
 import { APP_CONFIG } from '@/constants';
 
-const { darkAlgorithm } = theme;
 const { Title, Text } = Typography;
-
-const ADMIN_THEME: ThemeConfig = {
-  algorithm: darkAlgorithm,
-  token: {
-    colorPrimary: APP_CONFIG.primaryColor,
-    colorBgContainer: '#1a0a2e',
-    colorBgElevated: '#251044',
-    colorBorder: 'rgba(91, 33, 182, 0.35)',
-    colorText: 'rgba(255,255,255,0.9)',
-    colorTextSecondary: 'rgba(255,255,255,0.6)',
-  },
-  components: {
-    Table: { headerBg: '#251044', headerColor: 'rgba(255,255,255,0.9)' },
-    Card: { colorBgContainer: '#1a0a2e' },
-  },
-};
 
 type ClientRow = {
   slug: string;
@@ -90,7 +72,7 @@ export default function AdminClientsPage() {
       key: 'name',
       render: (name: string, row: ClientRow) => (
         <Space size={8}>
-          <Link href={`/admin/clients/${row.slug}`} style={{ color: APP_CONFIG.primaryColor }}>
+          <Link href={`/admin/clients/${row.slug}`} style={{ color: '#c4b5fd' }}>
             {name}
           </Link>
           {row.isDefault && (
@@ -157,7 +139,6 @@ export default function AdminClientsPage() {
   ];
 
   return (
-    <ConfigProvider theme={ADMIN_THEME}>
       <div style={{ minHeight: '100vh', padding: 32, background: APP_CONFIG.secondaryColor }}>
         <Card
           variant="outlined"
@@ -189,6 +170,5 @@ export default function AdminClientsPage() {
           </Space>
         </Card>
       </div>
-    </ConfigProvider>
   );
 }

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-  ConfigProvider,
   Card,
   Form,
   Input,
@@ -13,29 +12,16 @@ import {
   Space,
   Tabs,
   message,
-  theme,
   Modal,
   Tag,
   Skeleton,
 } from 'antd';
-import type { ThemeConfig } from 'antd';
 import { APP_CONFIG } from '@/constants';
 import { useAvailableVoices } from '@/hooks/useAvailableVoices';
 import type { ClientDoc, StructuredContext } from '@/lib/clientTypes';
 
-const { darkAlgorithm } = theme;
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
-
-const ADMIN_THEME: ThemeConfig = {
-  algorithm: darkAlgorithm,
-  token: {
-    colorPrimary: APP_CONFIG.primaryColor,
-    colorBgContainer: '#1a0a2e',
-    colorBgElevated: '#251044',
-    colorBorder: 'rgba(91, 33, 182, 0.35)',
-  },
-};
 
 export default function EditClientPage() {
   const params = useParams<{ slug: string }>();
@@ -112,20 +98,17 @@ export default function EditClientPage() {
 
   if (loading || !client) {
     return (
-      <ConfigProvider theme={ADMIN_THEME}>
         <div style={{ minHeight: '100vh', padding: 32, background: APP_CONFIG.secondaryColor }}>
           <Card style={{ maxWidth: 1100, margin: '0 auto' }}>
             <Skeleton active paragraph={{ rows: 10 }} />
           </Card>
         </div>
-      </ConfigProvider>
     );
   }
 
   const ctx = client.structuredContext;
 
   return (
-    <ConfigProvider theme={ADMIN_THEME}>
       <div style={{ minHeight: '100vh', padding: 32, background: APP_CONFIG.secondaryColor }}>
         <Card
           variant="outlined"
@@ -249,7 +232,6 @@ export default function EditClientPage() {
           />
         </Modal>
       </div>
-    </ConfigProvider>
   );
 }
 

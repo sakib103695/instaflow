@@ -3,27 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ConfigProvider, Card, Typography, Tag, Space, Skeleton } from 'antd';
-import type { ThemeConfig } from 'antd';
-import { theme } from 'antd';
+import { Card, Typography, Tag, Space, Skeleton } from 'antd';
 import { APP_CONFIG } from '@/constants';
-
-const { darkAlgorithm } = theme;
-
-const ADMIN_THEME: ThemeConfig = {
-  algorithm: darkAlgorithm,
-  token: {
-    colorPrimary: APP_CONFIG.primaryColor,
-    colorBgContainer: '#1a0a2e',
-    colorBgElevated: '#251044',
-    colorBorder: 'rgba(91, 33, 182, 0.35)',
-    colorText: 'rgba(255,255,255,0.9)',
-    colorTextSecondary: 'rgba(255,255,255,0.6)',
-  },
-  components: {
-    Card: { colorBgContainer: '#1a0a2e' },
-  },
-};
 
 type TranscriptEntry = { role: 'user' | 'agent'; text: string };
 
@@ -73,7 +54,6 @@ export default function AdminConversationDetailPage() {
     value ? new Date(value).toLocaleString() : 'Unknown';
 
   return (
-    <ConfigProvider theme={ADMIN_THEME}>
       <div
         style={{
           minHeight: '100vh',
@@ -99,7 +79,7 @@ export default function AdminConversationDetailPage() {
               <Text type="secondary">
                 <Link
                   href="/admin/22334412"
-                  style={{ color: APP_CONFIG.primaryColor }}
+                  style={{ color: '#c4b5fd' }}
                 >
                   ← Back to list
                 </Link>
@@ -130,8 +110,8 @@ export default function AdminConversationDetailPage() {
                     {data.selectedVoice?.label ? (
                       <Tag
                         style={{
-                          borderColor: APP_CONFIG.primaryColor,
-                          color: APP_CONFIG.primaryColor,
+                          borderColor: '#c4b5fd',
+                          color: '#c4b5fd',
                         }}
                       >
                         {data.selectedVoice.label}
@@ -191,6 +171,5 @@ export default function AdminConversationDetailPage() {
           </Space>
         </Card>
       </div>
-    </ConfigProvider>
   );
 }

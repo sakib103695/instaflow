@@ -564,7 +564,7 @@ export default function AdminSettingsPage() {
                         >
                           {m.name}
                         </div>
-                        <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11 }}>{m.id}</div>
+                        <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11 }}>{m.id}</div>
                       </div>
                       <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'center' }}>
                         <Tag color="purple" style={{ margin: 0 }}>

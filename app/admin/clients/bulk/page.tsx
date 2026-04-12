@@ -184,12 +184,12 @@ export default function BulkClientsPage() {
             style={{ background: '#1a0a2e', borderColor: 'rgba(91, 33, 182, 0.4)' }}
           >
             <p className="ant-upload-drag-icon">
-              <InboxOutlined style={{ color: APP_CONFIG.primaryColor }} />
+              <InboxOutlined style={{ color: '#a78bfa' }} />
             </p>
             <p className="ant-upload-text" style={{ color: 'rgba(255,255,255,0.9)' }}>
               Click or drag an .xlsx / .csv file here
             </p>
-            <p className="ant-upload-hint" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            <p className="ant-upload-hint" style={{ color: 'rgba(255,255,255,0.65)' }}>
               First sheet only. Header row required.
             </p>
           </Dragger>
@@ -281,7 +281,7 @@ export default function BulkClientsPage() {
               <Progress
                 percent={progressPercent}
                 status={scraping ? 'active' : status.pending === 0 ? 'success' : 'normal'}
-                strokeColor={APP_CONFIG.primaryColor}
+                strokeColor="#a78bfa"
               />
               <Space>
                 {scraping ? (

@@ -21,19 +21,29 @@ const { darkAlgorithm } = theme;
 const ADMIN_THEME: ThemeConfig = {
   algorithm: darkAlgorithm,
   token: {
-    colorPrimary: APP_CONFIG.primaryColor,
+    colorPrimary: '#a78bfa',
     colorBgContainer: '#1a0a2e',
     colorBgElevated: '#251044',
-    colorBorder: 'rgba(91, 33, 182, 0.35)',
-    colorText: 'rgba(255,255,255,0.9)',
-    colorTextSecondary: 'rgba(255,255,255,0.6)',
+    colorBorder: 'rgba(139, 92, 246, 0.30)',
+    colorText: 'rgba(255,255,255,0.92)',
+    colorTextSecondary: 'rgba(255,255,255,0.65)',
+    colorLink: '#c4b5fd',
+    colorLinkHover: '#ddd6fe',
+    colorLinkActive: '#a78bfa',
   },
   components: {
     Menu: {
       darkItemBg: '#0f0518',
       darkSubMenuItemBg: '#0f0518',
-      darkItemSelectedBg: APP_CONFIG.primaryColor,
-      darkItemHoverBg: 'rgba(91, 33, 182, 0.25)',
+      darkItemSelectedBg: '#7c3aed',
+      darkItemHoverBg: 'rgba(124, 58, 237, 0.20)',
+    },
+    Table: {
+      headerBg: '#251044',
+      headerColor: 'rgba(255,255,255,0.92)',
+    },
+    Card: {
+      colorBgContainer: '#1a0a2e',
     },
   },
 };

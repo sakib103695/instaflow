@@ -2,23 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ConfigProvider, Card, Form, Input, Button, Select, Typography, Space, message, theme, Alert } from 'antd';
-import type { ThemeConfig } from 'antd';
+import { Card, Form, Input, Button, Select, Typography, Space, message, Alert } from 'antd';
 import { APP_CONFIG } from '@/constants';
 import { useAvailableVoices } from '@/hooks/useAvailableVoices';
 
-const { darkAlgorithm } = theme;
 const { Title, Text } = Typography;
-
-const ADMIN_THEME: ThemeConfig = {
-  algorithm: darkAlgorithm,
-  token: {
-    colorPrimary: APP_CONFIG.primaryColor,
-    colorBgContainer: '#1a0a2e',
-    colorBgElevated: '#251044',
-    colorBorder: 'rgba(91, 33, 182, 0.35)',
-  },
-};
 
 export default function NewClientPage() {
   const router = useRouter();
@@ -78,7 +66,6 @@ export default function NewClientPage() {
   }
 
   return (
-    <ConfigProvider theme={ADMIN_THEME}>
       <div style={{ minHeight: '100vh', padding: 32, background: APP_CONFIG.secondaryColor }}>
         <Card
           variant="outlined"
@@ -146,6 +133,5 @@ export default function NewClientPage() {
           </Space>
         </Card>
       </div>
-    </ConfigProvider>
   );
 }

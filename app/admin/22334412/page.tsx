@@ -2,33 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ConfigProvider, Table, Card, Typography, Tag, Space, Skeleton } from 'antd';
-import type { ThemeConfig } from 'antd';
-import { theme } from 'antd';
+import { Table, Card, Typography, Tag, Space, Skeleton } from 'antd';
 import { APP_CONFIG } from '@/constants';
-
-const { darkAlgorithm } = theme;
-
-const ADMIN_THEME: ThemeConfig = {
-  algorithm: darkAlgorithm,
-  token: {
-    colorPrimary: APP_CONFIG.primaryColor,
-    colorBgContainer: '#1a0a2e',
-    colorBgElevated: '#251044',
-    colorBorder: 'rgba(91, 33, 182, 0.35)',
-    colorText: 'rgba(255,255,255,0.9)',
-    colorTextSecondary: 'rgba(255,255,255,0.6)',
-  },
-  components: {
-    Table: {
-      headerBg: '#251044',
-      headerColor: 'rgba(255,255,255,0.9)',
-    },
-    Card: {
-      colorBgContainer: '#1a0a2e',
-    },
-  },
-};
 
 type ConversationSummary = {
   id: string;
@@ -95,7 +70,7 @@ export default function AdminConversationsPage() {
       key: 'voiceLabel',
       render: (value: string | null) =>
         value ? (
-          <Tag style={{ borderColor: APP_CONFIG.primaryColor, color: APP_CONFIG.primaryColor }}>
+          <Tag style={{ borderColor: '#c4b5fd', color: '#c4b5fd' }}>
             {value}
           </Tag>
         ) : (
@@ -115,7 +90,7 @@ export default function AdminConversationsPage() {
       render: (_: unknown, record: ConversationSummary) => (
         <a
           onClick={() => router.push(`/admin/22334412/${record.id}`)}
-          style={{ color: APP_CONFIG.primaryColor, cursor: 'pointer' }}
+          style={{ color: '#c4b5fd', cursor: 'pointer' }}
         >
           View
         </a>
@@ -124,11 +99,10 @@ export default function AdminConversationsPage() {
   ];
 
   return (
-    <ConfigProvider theme={ADMIN_THEME}>
       <div
         style={{
           minHeight: '100vh',
-          padding: '32px',
+          padding: 32,
           background: APP_CONFIG.secondaryColor,
         }}
       >
@@ -171,6 +145,5 @@ export default function AdminConversationsPage() {
           </Space>
         </Card>
       </div>
-    </ConfigProvider>
   );
 }
