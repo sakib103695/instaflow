@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getConversationsCollection } from '@/lib/mongodb';
+import { getConversationsCollection, getClientsCollection } from '@/lib/mongodb';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -17,6 +17,7 @@ export async function GET() {
             startedAt: 1,
             endedAt: 1,
             createdAt: 1,
+            meta: 1,
           },
         }
       )
@@ -24,13 +25,35 @@ export async function GET() {
       .limit(200)
       .toArray();
 
-    const result = docs.map((d) => ({
-      id: d._id.toString(),
-      startedAt: d.startedAt || d.createdAt,
-      endedAt: d.endedAt || null,
-      voiceLabel: d.selectedVoice?.label ?? null,
-      messageCount: Array.isArray(d.transcript) ? d.transcript.length : 0,
-    }));
+    // Build a slug → name map for conversations that have a clientSlug.
+    const slugs = [
+      ...new Set(
+        docs
+          .map((d) => (d.meta as Record<string, unknown>)?.clientSlug)
+          .filter((s): s is string => typeof s === 'string' && s.length > 0),
+      ),
+    ];
+    let clientMap = new Map<string, string>();
+    if (slugs.length > 0) {
+      const clientsCol = await getClientsCollection();
+      const clients = await clientsCol
+        .find({ slug: { $in: slugs } }, { projection: { slug: 1, name: 1 } })
+        .toArray();
+      clientMap = new Map(clients.map((c) => [String(c.slug), String(c.name)]));
+    }
+
+    const result = docs.map((d) => {
+      const slug = (d.meta as Record<string, unknown>)?.clientSlug as string | undefined;
+      return {
+        id: d._id.toString(),
+        startedAt: d.startedAt || d.createdAt,
+        endedAt: d.endedAt || null,
+        voiceLabel: d.selectedVoice?.label ?? null,
+        messageCount: Array.isArray(d.transcript) ? d.transcript.length : 0,
+        clientSlug: slug || null,
+        clientName: (slug && clientMap.get(slug)) || null,
+      };
+    });
 
     return NextResponse.json(result);
   } catch (err) {
