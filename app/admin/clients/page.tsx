@@ -83,7 +83,6 @@ export default function AdminClientsPage() {
         </Space>
       ),
     },
-    { title: 'Slug', dataIndex: 'slug', key: 'slug' },
     { title: 'Domain', dataIndex: 'domain', key: 'domain' },
     {
       title: 'Client URL',

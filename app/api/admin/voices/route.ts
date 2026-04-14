@@ -33,33 +33,50 @@ export async function GET() {
 }
 
 /**
- * PUT /api/admin/voices — replace the curated voices collection.
+ * PUT /api/admin/voices — upsert partial set of voices.
  *
- * Whole-collection replace (instead of per-row CRUD) keeps the admin UI
- * dead simple: it loads the full list, edits in memory, and saves once.
- * The voices set is small (<100 rows) so the wire/IO cost is irrelevant.
+ * MERGE semantics (not replace): voices in the payload are upserted by id;
+ * voices already in the collection but NOT in the payload are untouched.
+ *
+ * This is crucial now that the UI lets admins browse the full ElevenLabs
+ * Voice Library ("shared" source) — a user enabling a shared voice
+ * shouldn't wipe out the enabled voices they picked from "My Voices"
+ * earlier.
+ *
+ * To REMOVE a voice from the curated list, set `remove: true` on that
+ * entry (or call DELETE with the ids — future work).
  */
 export async function PUT(request: Request) {
   try {
-    const body = (await request.json()) as { voices?: CuratedVoice[] };
+    const body = (await request.json()) as {
+      voices?: Array<CuratedVoice & { remove?: boolean }>;
+    };
     const voices = Array.isArray(body.voices) ? body.voices : null;
     if (!voices) {
       return NextResponse.json({ error: 'voices array required' }, { status: 400 });
     }
-    const cleaned = voices
-      .filter((v) => v && typeof v.id === 'string' && v.id.length > 0)
-      .map((v) => ({
+    const col = await getVoicesCollection();
+
+    let upserted = 0;
+    let removed = 0;
+    for (const v of voices) {
+      if (!v || typeof v.id !== 'string' || v.id.length === 0) continue;
+      if (v.remove) {
+        const res = await col.deleteOne({ id: v.id });
+        removed += res.deletedCount ?? 0;
+        continue;
+      }
+      const doc = {
         id: v.id,
         label: String(v.label ?? '').trim() || v.id,
         description: String(v.description ?? '').trim(),
         previewUrl: String(v.previewUrl ?? '').trim(),
         enabled: !!v.enabled,
-      }));
-
-    const col = await getVoicesCollection();
-    await col.deleteMany({});
-    if (cleaned.length > 0) await col.insertMany(cleaned);
-    return NextResponse.json({ ok: true, count: cleaned.length });
+      };
+      await col.updateOne({ id: v.id }, { $set: doc }, { upsert: true });
+      upserted += 1;
+    }
+    return NextResponse.json({ ok: true, upserted, removed });
   } catch (err) {
     console.error('Failed to save curated voices', err);
     return NextResponse.json({ error: 'Failed to save voices' }, { status: 500 });

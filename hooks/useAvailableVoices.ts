@@ -13,8 +13,14 @@ export function useAvailableVoices(): VoiceOption[] {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/voices')
-      .then((r) => (r.ok ? r.json() : []))
+    fetch('/api/voices', { cache: 'no-store' })
+      .then(async (r) => {
+        if (!r.ok) {
+          console.warn('useAvailableVoices: /api/voices returned', r.status);
+          return [];
+        }
+        return r.json();
+      })
       .then((rows: Array<{ id: string; label: string; description?: string }>) => {
         if (cancelled) return;
         if (Array.isArray(rows) && rows.length > 0) {
@@ -27,9 +33,15 @@ export function useAvailableVoices(): VoiceOption[] {
               previewText: '',
             })),
           );
+        } else {
+          console.info(
+            'useAvailableVoices: no enabled voices in /api/voices — falling back to hardcoded defaults. Enable voices at /admin/voices.',
+          );
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.warn('useAvailableVoices: fetch failed', err);
+      });
     return () => {
       cancelled = true;
     };

@@ -11,6 +11,8 @@ import {
   Skeleton,
   Tag,
   Table,
+  Select,
+  Segmented,
   message as antdMessage,
   Alert,
 } from 'antd';
@@ -26,7 +28,10 @@ type LibraryVoice = {
   previewUrl: string;
   category: string;
   labels: Record<string, string>;
+  source?: 'mine' | 'shared';
 };
+
+type LibrarySource = 'mine' | 'shared';
 
 type CuratedVoice = {
   id: string;
@@ -66,15 +71,39 @@ export default function AdminVoicesPage() {
   const [playingId, setPlayingId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Library source + filter state (only relevant when viewing shared library).
+  const [source, setSource] = useState<LibrarySource>('mine');
+  const [filters, setFilters] = useState<{
+    gender?: string;
+    accent?: string;
+    age?: string;
+    language?: string;
+    category?: string;
+  }>({});
+
   // Local edits keyed by voice id, applied on top of the merged base row.
   const [edits, setEdits] = useState<Record<string, Partial<CuratedVoice>>>({});
+
+  const buildLibraryUrl = () => {
+    const qs = new URLSearchParams({ source });
+    if (source === 'shared') {
+      qs.set('pageSize', '60');
+      if (search.trim()) qs.set('search', search.trim());
+      if (filters.gender) qs.set('gender', filters.gender);
+      if (filters.accent) qs.set('accent', filters.accent);
+      if (filters.age) qs.set('age', filters.age);
+      if (filters.language) qs.set('language', filters.language);
+      if (filters.category) qs.set('category', filters.category);
+    }
+    return `/api/admin/voices/library?${qs.toString()}`;
+  };
 
   const loadAll = async () => {
     setLoading(true);
     setLoadError(null);
     try {
       const [libRes, curRes] = await Promise.all([
-        fetch('/api/admin/voices/library'),
+        fetch(buildLibraryUrl()),
         fetch('/api/admin/voices'),
       ]);
       if (!libRes.ok) {
@@ -95,6 +124,10 @@ export default function AdminVoicesPage() {
 
   useEffect(() => {
     loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source]);
+
+  useEffect(() => {
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
@@ -106,7 +139,10 @@ export default function AdminVoicesPage() {
   const rows: Row[] = useMemo(() => {
     if (!library) return [];
     const curatedById = new Map((curated ?? []).map((c) => [c.id, c]));
-    return library.map((lib) => {
+    const libraryIds = new Set(library.map((l) => l.id));
+
+    // Base rows: every voice in the current library tab (mine or shared).
+    const base = library.map((lib) => {
       const c = curatedById.get(lib.id);
       const edit = edits[lib.id] ?? {};
       return {
@@ -121,6 +157,28 @@ export default function AdminVoicesPage() {
         enabled: edit.enabled ?? c?.enabled ?? false,
       };
     });
+
+    // Plus: any curated voices NOT present in the current library tab, so the
+    // user always sees what they've saved even while filtering the shared
+    // library for new ones. Shown as extras at the top of the list.
+    const extras = (curated ?? [])
+      .filter((c) => !libraryIds.has(c.id))
+      .map((c) => {
+        const edit = edits[c.id] ?? {};
+        return {
+          id: c.id,
+          libraryName: c.label || c.id,
+          libraryDescription: c.description || '',
+          previewUrl: c.previewUrl || '',
+          category: 'saved',
+          labels: { saved: 'saved' },
+          label: edit.label ?? c.label,
+          description: edit.description ?? c.description ?? '',
+          enabled: edit.enabled ?? c.enabled,
+        };
+      });
+
+    return [...extras, ...base];
   }, [library, curated, edits]);
 
   const filteredRows = useMemo(() => {
@@ -169,16 +227,28 @@ export default function AdminVoicesPage() {
   };
 
   const save = async () => {
+    // Only send the voices the user actually touched in this session. The
+    // server upserts by id, so voices not in the payload stay as they were
+    // — which is exactly what we want when browsing the shared library.
+    const editedIds = Object.keys(edits);
+    if (editedIds.length === 0) {
+      antdMessage.info('No changes to save.');
+      return;
+    }
     setSaving(true);
     try {
       const payload = {
-        voices: rows.map((r) => ({
-          id: r.id,
-          label: r.label,
-          description: r.description,
-          previewUrl: r.previewUrl,
-          enabled: r.enabled,
-        })),
+        voices: editedIds.map((id) => {
+          const row = rows.find((r) => r.id === id);
+          if (!row) return { id };
+          return {
+            id: row.id,
+            label: row.label,
+            description: row.description,
+            previewUrl: row.previewUrl,
+            enabled: row.enabled,
+          };
+        }),
       };
       const res = await fetch('/api/admin/voices', {
         method: 'PUT',
@@ -189,7 +259,7 @@ export default function AdminVoicesPage() {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || `Save failed (${res.status})`);
       }
-      antdMessage.success(`Saved. ${enabledCount} voice${enabledCount === 1 ? '' : 's'} enabled.`);
+      antdMessage.success(`Saved ${editedIds.length} change${editedIds.length === 1 ? '' : 's'}.`);
       setEdits({});
       // Refresh curated state from server.
       const curRes = await fetch('/api/admin/voices');
@@ -260,15 +330,109 @@ export default function AdminVoicesPage() {
             />
           )}
 
-          <Input
-            allowClear
-            prefix={<SearchOutlined />}
-            placeholder="Search by name, description, accent, gender…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            disabled={loading}
-            style={{ maxWidth: 480 }}
-          />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+            <Segmented
+              value={source}
+              onChange={(v) => setSource(v as LibrarySource)}
+              options={[
+                { label: 'My Voices', value: 'mine' },
+                { label: 'Voice Library (all)', value: 'shared' },
+              ]}
+            />
+            <Input
+              allowClear
+              prefix={<SearchOutlined />}
+              placeholder={
+                source === 'shared'
+                  ? 'Search the full ElevenLabs library…'
+                  : 'Filter your voices…'
+              }
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onPressEnter={() => source === 'shared' && loadAll()}
+              disabled={loading}
+              style={{ maxWidth: 320, flex: 1, minWidth: 200 }}
+            />
+            {source === 'shared' && (
+              <>
+                <Select
+                  allowClear
+                  placeholder="Gender"
+                  style={{ minWidth: 120 }}
+                  value={filters.gender}
+                  onChange={(v) => setFilters({ ...filters, gender: v })}
+                  options={[
+                    { value: 'female', label: 'Female' },
+                    { value: 'male', label: 'Male' },
+                    { value: 'neutral', label: 'Neutral' },
+                  ]}
+                />
+                <Select
+                  allowClear
+                  placeholder="Language"
+                  style={{ minWidth: 140 }}
+                  value={filters.language}
+                  onChange={(v) => setFilters({ ...filters, language: v })}
+                  options={[
+                    { value: 'en', label: 'English' },
+                    { value: 'hi', label: 'Hindi' },
+                    { value: 'es', label: 'Spanish' },
+                    { value: 'fr', label: 'French' },
+                    { value: 'de', label: 'German' },
+                    { value: 'it', label: 'Italian' },
+                    { value: 'pt', label: 'Portuguese' },
+                    { value: 'ja', label: 'Japanese' },
+                    { value: 'zh', label: 'Chinese' },
+                    { value: 'ar', label: 'Arabic' },
+                  ]}
+                />
+                <Select
+                  allowClear
+                  placeholder="Accent"
+                  style={{ minWidth: 140 }}
+                  value={filters.accent}
+                  onChange={(v) => setFilters({ ...filters, accent: v })}
+                  options={[
+                    { value: 'american', label: 'American' },
+                    { value: 'british', label: 'British' },
+                    { value: 'indian', label: 'Indian' },
+                    { value: 'australian', label: 'Australian' },
+                    { value: 'irish', label: 'Irish' },
+                    { value: 'scottish', label: 'Scottish' },
+                  ]}
+                />
+                <Select
+                  allowClear
+                  placeholder="Age"
+                  style={{ minWidth: 120 }}
+                  value={filters.age}
+                  onChange={(v) => setFilters({ ...filters, age: v })}
+                  options={[
+                    { value: 'young', label: 'Young' },
+                    { value: 'middle_aged', label: 'Middle aged' },
+                    { value: 'old', label: 'Old' },
+                  ]}
+                />
+                <Select
+                  allowClear
+                  placeholder="Use case"
+                  style={{ minWidth: 160 }}
+                  value={filters.category}
+                  onChange={(v) => setFilters({ ...filters, category: v })}
+                  options={[
+                    { value: 'conversational', label: 'Conversational' },
+                    { value: 'narrative_story', label: 'Narrative' },
+                    { value: 'characters_animation', label: 'Characters' },
+                    { value: 'news', label: 'News' },
+                    { value: 'social_media', label: 'Social media' },
+                  ]}
+                />
+                <Button onClick={loadAll} loading={loading}>
+                  Apply filters
+                </Button>
+              </>
+            )}
+          </div>
 
           {loading ? (
             <Skeleton active paragraph={{ rows: 8 }} />
