@@ -95,10 +95,14 @@ export const LANGUAGE_LABELS: Record<Language, string> = {
  */
 export function defaultGreeting(name: string, languages: Language[], personaName = 'Mia'): string {
   const langs = languages.length ? languages : ['en'];
-  const hasEn = langs.includes('en');
   const hasHi = langs.includes('hi');
+  const hasEn = langs.includes('en');
+  // Bilingual clients: start in English only. The firstMessage Vapi says is
+  // fixed verbatim — making it bilingual would mean saying the same thing
+  // twice every call. The prompt below tells the agent to switch the moment
+  // the caller speaks Hindi.
   if (hasEn && hasHi) {
-    return `Hello, namaste! Thanks for calling ${name}, this is ${personaName}. How can I help you today? Kaise madad kar sakti hoon?`;
+    return `Hi, thanks for calling ${name} — this is ${personaName}, how can I help you today?`;
   }
   if (hasHi) {
     return `Namaste! ${name} mein aapka swagat hai. Main ${personaName} bol rahi hoon — aaj main aapki kaise madad kar sakti hoon?`;

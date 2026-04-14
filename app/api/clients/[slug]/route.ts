@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getClientsCollection } from '@/lib/mongodb';
 import { composeSystemInstruction } from '@/lib/agentPrompt';
-import type { StructuredContext } from '@/lib/clientTypes';
+import { defaultGreeting, type StructuredContext, type Language } from '@/lib/clientTypes';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -42,7 +42,23 @@ export async function PATCH(req: Request, { params }: RouteCtx) {
     if (typeof body.voiceId === 'string') allowed.voiceId = body.voiceId;
     if (typeof body.greeting === 'string') allowed.greeting = body.greeting;
     if (Array.isArray(body.languages)) {
-      allowed.languages = body.languages.filter((l: unknown) => l === 'en' || l === 'hi');
+      const newLangs = body.languages.filter((l: unknown) => l === 'en' || l === 'hi') as Language[];
+      allowed.languages = newLangs;
+      // If the user didn't explicitly change the greeting AND the existing
+      // greeting still matches the auto-generated default for the OLD
+      // languages, regenerate it for the new languages. This fixes the
+      // "says it twice" bug where an old bilingual greeting lingers after
+      // switching languages, without clobbering greetings the user manually
+      // edited.
+      if (typeof body.greeting !== 'string') {
+        const oldLangs = (Array.isArray(existing.languages) && existing.languages.length > 0
+          ? existing.languages
+          : ['en']) as Language[];
+        const oldAutoGreeting = defaultGreeting(existing.name, oldLangs);
+        if (existing.greeting === oldAutoGreeting) {
+          allowed.greeting = defaultGreeting(existing.name, newLangs);
+        }
+      }
     }
     if (body.structuredContext && typeof body.structuredContext === 'object') {
       allowed.structuredContext = body.structuredContext;

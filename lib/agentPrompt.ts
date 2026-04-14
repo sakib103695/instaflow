@@ -138,22 +138,38 @@ function languageBlock(languages: Language[]): string {
   if (hasEn && hasHi) {
     return [
       '',
-      '## Language',
-      "This business serves callers who may speak English, Hindi, or a mix of both (Hinglish — common in India where speakers code-switch mid-sentence).",
-      '- Detect the caller\'s language from their first words and respond in the same language.',
-      '- If they speak Hinglish (mixing), match their style. Don\'t correct them into pure Hindi or pure English — mirror how they talk.',
-      '- Numbers, times, prices: read them the way a local would. Hindi for Hindi sentences, English for English sentences.',
-      '- If unsure, default to English.',
+      '# LANGUAGE RULES (CRITICAL — OVERRIDE OTHER INSTRUCTIONS IF CONFLICT)',
+      'You speak ONE language per turn. Never two. Never translate yourself.',
+      '',
+      '## Starting language',
+      'Your opening greeting is already in English. Stay in English until the caller speaks.',
+      '',
+      '## After the caller speaks',
+      '- If their words are English → you speak English. Reply in English only.',
+      '- If their words are Hindi (Devanagari or romanized Hindi like "namaste kaise ho") → you speak Hindi. Reply in Hindi only. Switch immediately, do not translate your previous English response.',
+      '- If their words mix English and Hindi (Hinglish, e.g. "Thursday ko 2 baje book kar do") → you mix the same way. Mirror their style exactly.',
+      '- Once you switch to Hindi, STAY in Hindi for the rest of the call unless the caller switches back to English. Do not drift back to English on your own.',
+      '',
+      '## Absolute prohibitions',
+      '- NEVER say the same sentence twice in two languages. Example of what NOT to do: "How can I help you? Kaise madad kar sakti hoon?" — this is WRONG. Pick one language per turn.',
+      '- NEVER say phrases like "in Hindi..." or "or in English..." — just speak the language.',
+      '- NEVER apologize for or announce the language switch. Just switch silently.',
+      '',
+      '## Numbers, times, prices',
+      'Render them naturally in whichever language you are currently speaking. Hindi sentence → "do baje", "paanch sau rupaye". English sentence → "two pm", "five hundred rupees".',
     ].join('\n');
   }
   if (hasHi) {
     return [
       '',
-      '## Language',
-      'You must speak Hindi on this call. Use natural, conversational Hindi — the way a warm receptionist in North India would talk.',
-      '- English loanwords that are standard in spoken Hindi (appointment, booking, service, email, phone) are fine — don\'t force Sanskrit-purist translations.',
-      '- Numbers, times, prices: say them the way Hindi speakers naturally do (e.g. "do baje", "paanch sau rupaye").',
-      '- If the caller suddenly switches to English, keep going in Hindi but stay warm and accommodating.',
+      '# LANGUAGE RULES (CRITICAL — OVERRIDE OTHER INSTRUCTIONS IF CONFLICT)',
+      'This entire call is in Hindi. You speak ONLY Hindi.',
+      '',
+      '- Use natural conversational Hindi — the way a warm receptionist in North India would talk on a real phone call.',
+      '- English loanwords that are standard in spoken Hindi (appointment, booking, service, email, phone, address, OK, fine) are fine. Do not force Sanskrit-purist translations.',
+      '- Numbers, times, prices: natural Hindi — "do baje", "paanch sau rupaye", "saade teen baje".',
+      '- NEVER translate yourself into English. NEVER say the same thing in two languages.',
+      '- If the caller speaks English, continue warmly in Hindi. Do not switch to English on your own.',
     ].join('\n');
   }
   return '';
