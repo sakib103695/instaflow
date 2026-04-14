@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import * as XLSX from 'xlsx';
 import { getConversationsCollection, getClientsCollection } from '@/lib/mongodb';
+import { isAdminAuthorized } from '@/lib/adminAuth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -15,7 +16,13 @@ export const dynamic = 'force-dynamic';
  *   - messages (count)
  *   - transcript (full text, agent/user turns joined by newlines)
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  if (!isAdminAuthorized(req)) {
+    return new NextResponse('Authentication required', {
+      status: 401,
+      headers: { 'WWW-Authenticate': 'Basic realm="Instaflow Admin"' },
+    });
+  }
   try {
     const col = await getConversationsCollection();
     const docs = await col.find({}).sort({ createdAt: -1 }).limit(5000).toArray();

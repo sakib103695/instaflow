@@ -1,10 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { getConversationsCollection, getClientsCollection } from '@/lib/mongodb';
+import { isAdminAuthorized } from '@/lib/adminAuth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+// GET is admin-only (transcripts are sensitive). POST stays unauthenticated
+// so the public voice widget can save calls without credentials.
+
+export async function GET(req: NextRequest) {
+  if (!isAdminAuthorized(req)) {
+    return new NextResponse('Authentication required', {
+      status: 401,
+      headers: { 'WWW-Authenticate': 'Basic realm="Instaflow Admin"' },
+    });
+  }
   try {
     const col = await getConversationsCollection();
     const docs = await col
