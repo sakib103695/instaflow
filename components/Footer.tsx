@@ -1,13 +1,7 @@
 import React from "react";
 
 function Frame185() {
-  return (
-    <div className="content-stretch lg:flex lg:space-y-0 space-y-2 gap-[34px] items-center relative shrink-0">
-      <p className="relative shrink-0">Privacy &amp; Policy</p>
-      <p className="relative shrink-0">Terms &amp; Conditions</p>
-      <p className="relative shrink-0">Contact Us</p>
-    </div>
-  );
+  return null;
 }
 
 function Frame184() {

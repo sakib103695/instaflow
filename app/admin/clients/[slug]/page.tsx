@@ -315,6 +315,17 @@ function ContextTab({
   const [text, setText] = useState(() => JSON.stringify(ctx, null, 2));
   const [error, setError] = useState<string | null>(null);
 
+  // Live validation so the Save button is only enabled when JSON parses.
+  // Avoids "I clicked save, why didn't anything happen?" after a typo.
+  const isValid = (() => {
+    try {
+      JSON.parse(text);
+      return true;
+    } catch {
+      return false;
+    }
+  })();
+
   function handleSave() {
     try {
       const parsed = JSON.parse(text);
@@ -338,7 +349,7 @@ function ContextTab({
         rows={28}
         style={{ fontFamily: 'monospace', fontSize: 12 }}
       />
-      <Button type="primary" loading={saving} onClick={handleSave}>
+      <Button type="primary" loading={saving} disabled={!isValid} onClick={handleSave}>
         Save context (recomposes prompt)
       </Button>
     </Space>

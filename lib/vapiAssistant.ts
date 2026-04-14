@@ -69,9 +69,10 @@ function buildTranscriber(languages: Language[]) {
  */
 export function buildInlineAssistant(opts: BuildAssistantOptions) {
   const voiceId = opts.voiceId || DEFAULT_VOICE_ID;
+  // findVoice() only knows the hardcoded AVAILABLE_VOICES list. Voices added
+  // via /admin/voices will miss that lookup and resolve to `undefined`. That's
+  // the common case — default to ElevenLabs in that branch.
   const voiceMeta = findVoice(voiceId);
-  // Provider-specific voice block. ElevenLabs is the default high-quality
-  // option; Cartesia Sonic-2 is the ultra-low-latency alternative.
   const voice =
     voiceMeta?.provider === 'cartesia'
       ? {
@@ -105,8 +106,11 @@ export function buildInlineAssistant(opts: BuildAssistantOptions) {
       },
     },
     // Don't cut the agent off on coughs/blips — require sustained speech.
+    // numWords:1 + voiceSeconds:0.3 lets short Hindi responses ("bilkul",
+    // "haan", "theek hai") interrupt the agent, while the 0.3s floor still
+    // filters out coughs and false starts.
     stopSpeakingPlan: {
-      numWords: 2,
+      numWords: 1,
       voiceSeconds: 0.3,
       backoffSeconds: 1.0,
     },

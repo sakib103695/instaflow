@@ -188,21 +188,29 @@ export default function AdminSettingsPage() {
   const loadAll = async () => {
     setLoading(true);
     setModelError(null);
+    // Load the three data sources independently so one outage (usually a
+    // flaky OpenRouter) doesn't blank the entire Settings page — users can
+    // still edit API keys and prompts while the model catalog is down.
+    await loadSettings().catch((err) => {
+      console.warn('loadSettings failed', err);
+    });
     try {
-      await loadSettings();
-      const [modelsRes, defaultsRes] = await Promise.all([
-        fetch('/api/admin/openrouter/models'),
-        fetch('/api/admin/prompt-defaults'),
-      ]);
+      const defaultsRes = await fetch('/api/admin/prompt-defaults');
+      if (defaultsRes.ok) setDefaults(await defaultsRes.json());
+    } catch (err) {
+      console.warn('prompt-defaults fetch failed', err);
+    }
+    try {
+      const modelsRes = await fetch('/api/admin/openrouter/models');
       if (!modelsRes.ok) {
         const err = await modelsRes.json().catch(() => ({}));
         throw new Error(err.error || `Models fetch failed (${modelsRes.status})`);
       }
       const modelsJson = await modelsRes.json();
       setModels(modelsJson.models || []);
-      if (defaultsRes.ok) setDefaults(await defaultsRes.json());
     } catch (err) {
-      setModelError(err instanceof Error ? err.message : 'Failed to load');
+      setModelError(err instanceof Error ? err.message : 'Failed to load OpenRouter catalog');
+      setModels([]);
     } finally {
       setLoading(false);
     }

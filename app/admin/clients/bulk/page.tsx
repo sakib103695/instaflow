@@ -65,6 +65,13 @@ export default function BulkClientsPage() {
 
   /** Parse the dropped/selected xlsx in the browser. */
   const handleFile = (file: File): boolean => {
+    // Hard caps to keep the browser from OOMing on a malicious / giant file.
+    const MAX_BYTES = 10 * 1024 * 1024; // 10MB
+    const MAX_ROWS = 10_000;
+    if (file.size > MAX_BYTES) {
+      antdMessage.error('File is larger than 10 MB. Split the spreadsheet and upload in batches.');
+      return false;
+    }
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
@@ -74,6 +81,12 @@ export default function BulkClientsPage() {
         const json = XLSX.utils.sheet_to_json<ParsedRow>(firstSheet, { defval: '' });
         if (json.length === 0) {
           antdMessage.error('Spreadsheet is empty.');
+          return;
+        }
+        if (json.length > MAX_ROWS) {
+          antdMessage.error(
+            `Spreadsheet has ${json.length} rows. Max per upload is ${MAX_ROWS}. Split it.`,
+          );
           return;
         }
         const cols = Object.keys(json[0]);

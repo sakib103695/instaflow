@@ -85,10 +85,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const normalizedTranscript = transcript.map((entry: unknown) => {
-      if (typeof entry === 'string') return { role: 'agent' as const, text: entry };
+    // Hard caps so a runaway call (or malicious payload) can't insert a
+    // huge blob: max 500 turns, max 2KB per turn text.
+    const MAX_TURNS = 500;
+    const MAX_TEXT_LEN = 2000;
+    const limited = transcript.slice(0, MAX_TURNS);
+    const normalizedTranscript = limited.map((entry: unknown) => {
+      if (typeof entry === 'string') {
+        return { role: 'agent' as const, text: entry.slice(0, MAX_TEXT_LEN) };
+      }
       const e = entry as { role?: string; text?: string };
-      return { role: (e.role === 'user' ? 'user' : 'agent') as 'user' | 'agent', text: String(e.text ?? '') };
+      return {
+        role: (e.role === 'user' ? 'user' : 'agent') as 'user' | 'agent',
+        text: String(e.text ?? '').slice(0, MAX_TEXT_LEN),
+      };
     });
 
     const doc = {

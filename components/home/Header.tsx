@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import svgPaths from "@/public/assets/data/svgPaths";
 import "../../styles/button.css";
@@ -130,6 +130,16 @@ function DesktopNav({
 export default function Header() {
   const [open, setOpen] = useState(false);
   const closeMenu = () => setOpen(false);
+
+  // Close the mobile menu on Escape for keyboard parity with modals.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
 
   return (
     <div className="w-full fixed top-4 sm:top-6 z-50 px-3 sm:px-4">

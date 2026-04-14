@@ -53,6 +53,36 @@ export function normalizeUrl(input: string): string {
   }
 }
 
+/**
+ * Reject targets that would let a malicious admin (or bad bulk upload row)
+ * scan the internal network by bouncing a fetch through our server.
+ *
+ * Blocks: non-http(s) schemes, localhost variants, and RFC1918 private +
+ * link-local IPv4 ranges. We validate the hostname string, not a resolved
+ * IP — attackers can still set up DNS pointing to private IPs, but Jina
+ * (our primary fetcher) proxies through its own infra, which gives us a
+ * second natural barrier for that case.
+ */
+export function isSafePublicUrl(input: string): boolean {
+  try {
+    const u = new URL(input);
+    if (!/^https?:$/.test(u.protocol)) return false;
+    const host = u.hostname.toLowerCase();
+    if (!host) return false;
+    if (host === 'localhost' || host === '0.0.0.0' || host === '::1') return false;
+    if (/^127\./.test(host)) return false;
+    if (/^10\./.test(host)) return false;
+    if (/^192\.168\./.test(host)) return false;
+    if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(host)) return false;
+    if (/^169\.254\./.test(host)) return false; // link-local
+    if (/^fc[0-9a-f]{2}:/i.test(host) || /^fd[0-9a-f]{2}:/i.test(host)) return false; // IPv6 ULA
+    if (/^fe80:/i.test(host)) return false; // IPv6 link-local
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function fetchWithTimeout(url: string, ms: number): Promise<Response> {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), ms);
@@ -119,6 +149,15 @@ function extractTitle(markdown: string, fallback: string): string {
 
 export async function scrapeSite(rawUrl: string): Promise<ScrapeResult> {
   const url = normalizeUrl(rawUrl);
+  if (!isSafePublicUrl(url)) {
+    return {
+      url,
+      pages: [],
+      combined: '',
+      method: 'direct',
+      error: 'Refusing to scrape a non-public URL (localhost, private IP, or non-http scheme).',
+    };
+  }
   const origin = new URL(url).origin;
   const pages: ScrapeResult['pages'] = [];
   let method: 'jina' | 'direct' = 'jina';

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { resolveSecret } from '@/lib/secrets';
+import { upstreamFetch } from '@/lib/upstream';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -62,7 +63,7 @@ export async function GET(request: Request) {
 }
 
 async function fetchMyVoices(apiKey: string) {
-  const res = await fetch('https://api.elevenlabs.io/v1/voices', {
+  const res = await upstreamFetch('https://api.elevenlabs.io/v1/voices', {
     headers: { 'xi-api-key': apiKey, accept: 'application/json' },
     cache: 'no-store',
   });
@@ -100,7 +101,7 @@ async function fetchSharedLibrary(apiKey: string, params: URLSearchParams) {
     if (v) qs.set(k, v);
   }
 
-  const res = await fetch(`https://api.elevenlabs.io/v1/shared-voices?${qs.toString()}`, {
+  const res = await upstreamFetch(`https://api.elevenlabs.io/v1/shared-voices?${qs.toString()}`, {
     headers: { 'xi-api-key': apiKey, accept: 'application/json' },
     cache: 'no-store',
   });

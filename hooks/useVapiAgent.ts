@@ -96,6 +96,13 @@ export function useVapiAgent(opts: UseVapiAgentOptions) {
   const transcriptionRef = useRef<TranscriptEntry[]>([]);
   const startedAtRef = useRef<string | null>(null);
   const hasSavedRef = useRef(false);
+  // Hold the latest saveMeta so persistConversation (which is wired into
+  // long-lived Vapi event listeners) doesn't capture a stale one if the
+  // parent rerenders with a new meta during the call.
+  const saveMetaRef = useRef(saveMeta);
+  useEffect(() => {
+    saveMetaRef.current = saveMeta;
+  }, [saveMeta]);
 
   /**
    * Build a brand new Vapi instance for every call.
@@ -159,7 +166,7 @@ export function useVapiAgent(opts: UseVapiAgentOptions) {
       selectedVoice: { id: selectedVoice.id, label: selectedVoice.label },
       startedAt: startedAtRef.current ?? null,
       endedAt: new Date().toISOString(),
-      meta: saveMeta ?? {},
+      meta: saveMetaRef.current ?? {},
     };
 
     fetch(saveEndpoint, {
@@ -167,7 +174,7 @@ export function useVapiAgent(opts: UseVapiAgentOptions) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     }).catch((e) => console.error('Failed to save conversation', e));
-  }, [saveEndpoint, saveMeta, selectedVoice.id, selectedVoice.label]);
+  }, [saveEndpoint, selectedVoice.id, selectedVoice.label]);
 
   const stopConversation = useCallback(() => {
     persistConversation();
@@ -280,18 +287,28 @@ export function useVapiAgent(opts: UseVapiAgentOptions) {
       });
 
       // Inject the selected voice's persona name into the prompt + greeting
-      // so the agent introduces itself with the right name no matter which
-      // voice the user picked. Without this the LLM hallucinates names like
-      // "Alex" because the voice file only carries the audio, not a name.
-      const personaName = selectedVoice.label.split(' ')[0]; // strip "(Fast)" etc.
-      const personaInjection = `\n\n## Your name on this call\nYou go by "${personaName}". Always introduce yourself as ${personaName}. Never use any other name.\n`;
-      const adjustedPrompt = systemInstruction + personaInjection;
-      // Rewrite the greeting to use the new name. We swap any pre-existing
-      // first name in the greeting with the persona name.
-      const adjustedGreeting = greeting.replace(
-        /this is\s+\w+/i,
-        `this is ${personaName}`,
-      );
+      // so the agent introduces itself with the right name regardless of which
+      // voice the user picked (the voice file carries audio, not a name).
+      //
+      // Extract a clean first name: leading letters only. Strips any parens
+      // suffix like "Lucy (Fast)" → "Lucy", emoji, and extra qualifiers.
+      const rawLabel = (selectedVoice?.label || '').trim();
+      const nameMatch = rawLabel.match(/^[A-Za-z\u00C0-\u024F]+/);
+      const personaName = nameMatch ? nameMatch[0] : 'Mia';
+      const nameSection = `## Your name on this call\nYou go by "${personaName}". Always introduce yourself as ${personaName}. Never use any other name.`;
+      // The composed prompt already has a "## Your name on this call" block
+      // (from composeSystemInstruction). Replace it in place rather than
+      // appending — otherwise the prompt contains two conflicting name
+      // sections and the LLM may pick either.
+      const nameSectionRe = /##\s*Your name on this call[\s\S]*?(?=\n##\s|\n*$)/i;
+      const adjustedPrompt = nameSectionRe.test(systemInstruction)
+        ? systemInstruction.replace(nameSectionRe, nameSection)
+        : `${systemInstruction}\n\n${nameSection}`;
+      // Rewrite the greeting to use the new name. Support both English
+      // ("this is X") and the Hindi default ("main X bol rahi hoon").
+      const adjustedGreeting = greeting
+        .replace(/this is\s+\w+/i, `this is ${personaName}`)
+        .replace(/main\s+\w+\s+bol\s+rahi\s+hoon/i, `main ${personaName} bol rahi hoon`);
 
       const assistant = buildInlineAssistant({
         systemPrompt: adjustedPrompt,

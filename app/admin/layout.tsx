@@ -104,6 +104,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           onCollapse={setCollapsed}
           theme="dark"
           width={220}
+          breakpoint="lg"
+          collapsedWidth={64}
           style={{
             background: '#0f0518',
             borderRight: '1px solid rgba(91, 33, 182, 0.25)',

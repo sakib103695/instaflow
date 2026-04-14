@@ -27,6 +27,15 @@ export async function POST() {
   try {
     const col = await getClientsCollection();
 
+    // Self-heal: any row stuck in `in_progress` for more than 5 minutes means
+    // the previous scrape crashed mid-flight. Revert it to pending so a new
+    // poll picks it up instead of leaving the queue jammed.
+    const staleCutoff = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    await col.updateMany(
+      { scrapeStatus: 'in_progress', updatedAt: { $lt: staleCutoff } },
+      { $set: { scrapeStatus: 'pending' } },
+    );
+
     // findOneAndUpdate atomically claims a row so two concurrent pollers
     // can't grab the same one.
     const claimed = await col.findOneAndUpdate(

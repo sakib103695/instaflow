@@ -37,6 +37,14 @@ services:
       - "127.0.0.1:3010:3000"
     networks:
       - instaflow
+    healthcheck:
+      # /api/health pings Mongo too — if the DB drops, docker will notice
+      # instead of the container looking healthy while serving 500s.
+      test: ["CMD-SHELL", "wget -qO- --tries=1 --timeout=4 http://127.0.0.1:3000/api/health | grep -q '\"ok\":true'"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   mongo:
     image: mongo:7

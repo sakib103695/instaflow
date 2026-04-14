@@ -10,6 +10,12 @@ export type AgentConfig = {
   greeting: string;
   voiceId: string;
   languages?: Array<'en' | 'hi'>;
+  /**
+   * True when this is the fallback demo agent (no ?client= slug, no default
+   * client in DB). The hero card uses this to decide whether to personalize
+   * its title ("Call X's AI Receptionist") or show the generic demo CTA.
+   */
+  isDemo?: boolean;
 };
 
 export type StructuredContext = {

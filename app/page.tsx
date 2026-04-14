@@ -26,6 +26,11 @@ export default async function Page({ searchParams }: PageProps) {
     loadVoicesForPicker(),
   ]);
 
+  // If the visitor explicitly asked for a client by slug we treat that as a
+  // real per-client page (isDemo=false). Otherwise — whether we resolved the
+  // default or fell back to the hardcoded demo — we're on the generic marketing
+  // page and should not personalize the hero.
+  const isDemo = !requestedSlug;
   const agentConfig = client
     ? {
         slug: client.slug,
@@ -36,6 +41,7 @@ export default async function Page({ searchParams }: PageProps) {
         languages: (Array.isArray(client.languages) && client.languages.length > 0
           ? client.languages
           : ['en']) as Array<'en' | 'hi'>,
+        isDemo,
       }
     : {
         slug: 'demo',
@@ -44,6 +50,7 @@ export default async function Page({ searchParams }: PageProps) {
         greeting: "Hi, thanks for calling GlowLift Medspa — this is Mia, how can I help you today?",
         voiceId: DEFAULT_VOICE_ID,
         languages: ['en'] as Array<'en' | 'hi'>,
+        isDemo: true,
       };
 
   return <Home agentConfig={agentConfig} availableVoices={availableVoices} />;

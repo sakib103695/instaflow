@@ -3,6 +3,7 @@ import { resolveStructuringPrompt } from './agentPrompt';
 import { EMPTY_STRUCTURED_CONTEXT, type StructuredContext } from './clientTypes';
 import { getSetting } from './mongodb';
 import { resolveSecret } from './secrets';
+import { upstreamFetch } from './upstream';
 
 /**
  * Provider selection for the one-shot structuring step.
@@ -25,8 +26,11 @@ async function getServerGemini() {
 
 async function structureViaOpenRouter(rawText: string, model: string, apiKey: string): Promise<StructuredContext> {
   const instruction = await resolveStructuringPrompt();
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  const res = await upstreamFetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
+    // LLM completions can legitimately take a while for long inputs, but
+    // anything past 90s is a hung call, not a slow one.
+    timeoutMs: 90_000,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,

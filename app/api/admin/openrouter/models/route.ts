@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { upstreamFetch } from '@/lib/upstream';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -25,9 +26,9 @@ type OpenRouterModel = {
  */
 export async function GET() {
   try {
-    const res = await fetch('https://openrouter.ai/api/v1/models', {
+    const res = await upstreamFetch('https://openrouter.ai/api/v1/models', {
       headers: { accept: 'application/json' },
-      next: { revalidate: 600 },
+      timeoutMs: 10_000,
     });
     if (!res.ok) {
       return NextResponse.json(

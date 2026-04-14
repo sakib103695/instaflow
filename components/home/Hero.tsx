@@ -47,15 +47,22 @@ function HeroHeadline() {
         >
           Your Front Desk Is Losing You Money.
         </p>
-        <p
-          className="min-h-[1.2em] mt-2 bg-clip-text font-bold bg-gradient-to-b from-[#fff3a3] to-[#ffd23f] transition-opacity duration-300"
-          style={{
-            WebkitTextFillColor: "transparent",
-            opacity: isVisible ? 1 : 0,
-          }}
-        >
-          {ROTATING_WORDS[wordIndex]}
-        </p>
+        <span className="relative inline-block min-h-[1.2em]">
+          {/* Invisible reservation for the longest word so the headline
+              doesn't reflow when a shorter word is rotated in. */}
+          <span aria-hidden className="invisible font-bold uppercase">
+            {ROTATING_WORDS.reduce((a, b) => (a.length >= b.length ? a : b))}
+          </span>
+          <p
+            className="absolute inset-0 mt-2 bg-clip-text font-bold bg-gradient-to-b from-[#fff3a3] to-[#ffd23f] transition-opacity duration-300"
+            style={{
+              WebkitTextFillColor: "transparent",
+              opacity: isVisible ? 1 : 0,
+            }}
+          >
+            {ROTATING_WORDS[wordIndex]}
+          </p>
+        </span>
       </div>
       <p className="text-[#c8c8c8] text-sm sm:text-[15px] leading-relaxed max-w-[560px]">
         Right now, 35% of your calls go to voicemail. Each one is a booking that
@@ -168,6 +175,7 @@ function VoiceLevelBars({ isActive }: { isActive: boolean }) {
 /* ================= MAIN GLASS CARD (original design + functionality) ================= */
 interface HeroCardProps {
   clientName?: string;
+  isPersonalized: boolean;
   voices: VoiceOption[];
   selectedVoice: VoiceOption;
   setSelectedVoice: (v: VoiceOption) => void;
@@ -180,6 +188,7 @@ interface HeroCardProps {
 
 function HeroCard({
   clientName,
+  isPersonalized,
   voices,
   selectedVoice,
   setSelectedVoice,
@@ -189,7 +198,6 @@ function HeroCard({
   startConversation,
   stopConversation,
 }: HeroCardProps) {
-  const isPersonalized = clientName && clientName !== 'GlowLift Medspa';
   return (
     <div className="relative w-full max-w-[560px] min-w-0 rounded-[16px] sm:rounded-[20px] p-4 sm:p-6 flex flex-col gap-4 sm:gap-6 overflow-hidden border border-white/10 backdrop-blur-xl shadow-[inset_0_1px_40px_0_rgba(227,222,255,0.2),inset_0_0_56px_-36px_rgba(255,255,255,0.5)] bg-white/[0.06]">
       <div className="absolute inset-0 pointer-events-none bg-[#CD9EFF]/10 blur-[80px] rounded-full w-32 h-32 left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2" />
@@ -376,6 +384,7 @@ export function Hero({
         <HeroHeadline />
         <HeroCard
           clientName={agentConfig.name}
+          isPersonalized={!agentConfig.isDemo}
           voices={voices}
           selectedVoice={selectedVoice}
           setSelectedVoice={setSelectedVoice}

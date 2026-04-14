@@ -8,10 +8,15 @@ export default function RevenueCalculator() {
   const [avgServicePrice, setAvgServicePrice] = useState(500);
 
   const result = useMemo(() => {
-    const missedPerDay = callsPerDay * (voicemailRate / 100);
+    // Clamp every input to a sane non-negative finite number so a manual
+    // paste of "-500" or "abc" can't produce NaN or negative revenue losses.
+    const calls = Math.max(0, Number.isFinite(callsPerDay) ? callsPerDay : 0);
+    const rate = Math.max(0, Math.min(100, Number.isFinite(voicemailRate) ? voicemailRate : 0));
+    const price = Math.max(0, Number.isFinite(avgServicePrice) ? avgServicePrice : 0);
+    const missedPerDay = calls * (rate / 100);
     const missedPerMonth = Math.round(missedPerDay * 30);
     const conversionRate = 0.3;
-    const monthlyLoss = Math.round(missedPerMonth * conversionRate * avgServicePrice);
+    const monthlyLoss = Math.round(missedPerMonth * conversionRate * price);
     const yearlyLoss = monthlyLoss * 12;
     return { missedPerMonth, monthlyLoss, yearlyLoss };
   }, [callsPerDay, voicemailRate, avgServicePrice]);
