@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Table, Card, Typography, Button, Space, Skeleton, Popconfirm, message, Tag, Tooltip } from 'antd';
+import { PlayCircleOutlined, CopyOutlined } from '@ant-design/icons';
 import { APP_CONFIG } from '@/constants';
 
 const { Title, Text } = Typography;
@@ -85,17 +86,35 @@ export default function AdminClientsPage() {
     },
     { title: 'Domain', dataIndex: 'domain', key: 'domain' },
     {
-      title: 'Client URL',
+      title: 'Agent',
       key: 'public',
+      width: 190,
       render: (_: unknown, row: ClientRow) => {
-        // Always use the ?client=<slug> form — it works for every client,
-        // including the default. Mail campaigns need a stable unique URL per
-        // client; the "just /" form for the default would be ambiguous.
         const url = `/?client=${row.slug}`;
         return (
-          <a href={url} target="_blank" rel="noreferrer" style={{ color: '#a78bfa' }}>
-            {url}
-          </a>
+          <Space size={4}>
+            <Button
+              type="primary"
+              size="small"
+              icon={<PlayCircleOutlined />}
+              onClick={() => window.open(url, '_blank')}
+            >
+              Try agent
+            </Button>
+            <Tooltip title="Copy URL for mail campaign">
+              <Button
+                size="small"
+                icon={<CopyOutlined />}
+                onClick={() => {
+                  const absolute = typeof window !== 'undefined'
+                    ? `${window.location.origin}${url}`
+                    : url;
+                  navigator.clipboard.writeText(absolute);
+                  message.success('URL copied');
+                }}
+              />
+            </Tooltip>
+          </Space>
         );
       },
     },
