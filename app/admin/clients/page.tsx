@@ -86,18 +86,19 @@ export default function AdminClientsPage() {
     { title: 'Slug', dataIndex: 'slug', key: 'slug' },
     { title: 'Domain', dataIndex: 'domain', key: 'domain' },
     {
-      title: 'Homepage URL',
+      title: 'Client URL',
       key: 'public',
-      render: (_: unknown, row: ClientRow) => (
-        <a
-          href={row.isDefault ? '/' : `/?client=${row.slug}`}
-          target="_blank"
-          rel="noreferrer"
-          style={{ color: '#a78bfa' }}
-        >
-          {row.isDefault ? '/' : `/?client=${row.slug}`}
-        </a>
-      ),
+      render: (_: unknown, row: ClientRow) => {
+        // Always use the ?client=<slug> form — it works for every client,
+        // including the default. Mail campaigns need a stable unique URL per
+        // client; the "just /" form for the default would be ambiguous.
+        const url = `/?client=${row.slug}`;
+        return (
+          <a href={url} target="_blank" rel="noreferrer" style={{ color: '#a78bfa' }}>
+            {url}
+          </a>
+        );
+      },
     },
     { title: 'Voice', dataIndex: 'voiceId', key: 'voiceId', width: 110 },
     {
