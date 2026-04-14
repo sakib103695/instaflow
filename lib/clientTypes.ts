@@ -9,6 +9,7 @@ export type AgentConfig = {
   systemPrompt: string;
   greeting: string;
   voiceId: string;
+  languages?: Array<'en' | 'hi'>;
 };
 
 export type StructuredContext = {
@@ -69,9 +70,41 @@ export type ClientDoc = {
   structuredContext: StructuredContext;
   systemPrompt: string;
   greeting: string;
+  /**
+   * Which spoken languages the agent should handle. Defaults to ['en'].
+   * When more than one is set we run Deepgram in multi-language detection
+   * mode and instruct the LLM to match the caller's language (including
+   * Hinglish mid-sentence switching).
+   */
+  languages?: Array<'en' | 'hi'>;
   createdAt: string;
   updatedAt: string;
 };
+
+export type Language = 'en' | 'hi';
+
+export const LANGUAGE_LABELS: Record<Language, string> = {
+  en: 'English',
+  hi: 'Hindi',
+};
+
+/**
+ * Generate a sensible default greeting for a given language set. Users can
+ * override this in admin; this is just the starting value for new or
+ * bulk-created clients.
+ */
+export function defaultGreeting(name: string, languages: Language[], personaName = 'Mia'): string {
+  const langs = languages.length ? languages : ['en'];
+  const hasEn = langs.includes('en');
+  const hasHi = langs.includes('hi');
+  if (hasEn && hasHi) {
+    return `Hello, namaste! Thanks for calling ${name}, this is ${personaName}. How can I help you today? Kaise madad kar sakti hoon?`;
+  }
+  if (hasHi) {
+    return `Namaste! ${name} mein aapka swagat hai. Main ${personaName} bol rahi hoon — aaj main aapki kaise madad kar sakti hoon?`;
+  }
+  return `Hi, thanks for calling ${name} — this is ${personaName}, how can I help you today?`;
+}
 
 export const EMPTY_STRUCTURED_CONTEXT: StructuredContext = {
   business: {

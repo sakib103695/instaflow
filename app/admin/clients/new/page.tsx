@@ -100,7 +100,7 @@ export default function NewClientPage() {
               />
             )}
 
-            <Form layout="vertical" form={form} onFinish={onFinish} initialValues={{ voiceId: 'Kore' }}>
+            <Form layout="vertical" form={form} onFinish={onFinish} initialValues={{ voiceId: 'Kore', languages: ['en'] }}>
               <Form.Item
                 label="Business name"
                 name="name"
@@ -122,6 +122,20 @@ export default function NewClientPage() {
                     value: v.id,
                     label: v.description ? `${v.label} — ${v.description}` : v.label,
                   }))}
+                />
+              </Form.Item>
+              <Form.Item
+                label="Languages"
+                name="languages"
+                extra="Pick both to enable auto-detect (handles Hinglish)."
+              >
+                <Select
+                  mode="multiple"
+                  size="large"
+                  options={[
+                    { value: 'en', label: 'English' },
+                    { value: 'hi', label: 'Hindi' },
+                  ]}
                 />
               </Form.Item>
               <Form.Item>

@@ -43,6 +43,8 @@ export default function BulkClientsPage() {
   const [columns, setColumns] = useState<string[]>([]);
   const [domainColumn, setDomainColumn] = useState<string>('');
   const [nameColumn, setNameColumn] = useState<string>('');
+  const [languagesColumn, setLanguagesColumn] = useState<string>('');
+  const [defaultLanguages, setDefaultLanguages] = useState<Array<'en' | 'hi'>>(['en']);
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState<BulkResult | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
@@ -83,6 +85,8 @@ export default function BulkClientsPage() {
         setDomainColumn(guess);
         const nameGuess = cols.find((c) => /^name$|business|company|client/i.test(c));
         if (nameGuess) setNameColumn(nameGuess);
+        const langGuess = cols.find((c) => /lang|language/i.test(c));
+        if (langGuess) setLanguagesColumn(langGuess);
         setResult(null);
         antdMessage.success(`Loaded ${json.length} rows.`);
       } catch (err) {
@@ -104,7 +108,13 @@ export default function BulkClientsPage() {
       const res = await fetch('/api/clients/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rows, domainColumn, nameColumn: nameColumn || undefined }),
+        body: JSON.stringify({
+          rows,
+          domainColumn,
+          nameColumn: nameColumn || undefined,
+          languagesColumn: languagesColumn || undefined,
+          defaultLanguages,
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Upload failed');
@@ -224,6 +234,34 @@ export default function BulkClientsPage() {
                     onChange={(v) => setNameColumn(v || '')}
                     options={columns.map((c) => ({ value: c, label: c }))}
                     placeholder="Defaults to a humanized domain"
+                  />
+                </div>
+                <div>
+                  <Text type="secondary" style={{ display: 'block', fontSize: 11, marginBottom: 4 }}>
+                    Languages column (optional)
+                  </Text>
+                  <Select
+                    allowClear
+                    style={{ minWidth: 240 }}
+                    value={languagesColumn || undefined}
+                    onChange={(v) => setLanguagesColumn(v || '')}
+                    options={columns.map((c) => ({ value: c, label: c }))}
+                    placeholder="Cell values: en / hi / en,hi"
+                  />
+                </div>
+                <div>
+                  <Text type="secondary" style={{ display: 'block', fontSize: 11, marginBottom: 4 }}>
+                    Default languages
+                  </Text>
+                  <Select
+                    mode="multiple"
+                    style={{ minWidth: 240 }}
+                    value={defaultLanguages}
+                    onChange={(v) => setDefaultLanguages(v as Array<'en' | 'hi'>)}
+                    options={[
+                      { value: 'en', label: 'English' },
+                      { value: 'hi', label: 'Hindi' },
+                    ]}
                   />
                 </div>
                 <div style={{ alignSelf: 'flex-end' }}>

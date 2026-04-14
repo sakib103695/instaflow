@@ -28,10 +28,9 @@ function Mic2() {
 }
 
 const NAV_SECTIONS = [
-  { id: "hero", label: "Demo" },
-  { id: "features", label: "Features" },
-  { id: "industries", label: "Industries" },
-  { id: "contact", label: "Integrations" },
+  { id: "hero", label: "Try It" },
+  { id: "calculator", label: "Your Numbers" },
+  { id: "features", label: "How It Works" },
 ] as const;
 
 function scrollToSection(sectionId: string) {

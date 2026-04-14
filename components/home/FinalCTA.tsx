@@ -1,39 +1,43 @@
-import React from "react";
-
 export default function FinalCTA() {
   return (
     <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-[linear-gradient(135deg,#3c35d3,#5c54e8)] text-white">
-      <div className="max-w-5xl mx-auto text-center">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold">
-          Stop Losing Bookings to Voicemail
+      <div className="max-w-4xl mx-auto text-center">
+        <p className="text-white/70 uppercase tracking-[3px] text-xs mb-4">
+          One Last Thing
+        </p>
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight">
+          Every Call You Miss Today<br className="hidden sm:block" /> Is a Booking Your Competitor Gets
         </h2>
-        <p className="mt-4 text-base sm:text-lg text-white/90 max-w-3xl mx-auto">
-          Every week you wait, more callers hang up or go to a competitor. Businesses
-          using InstaFlow answer every call and fill more appointments—without
-          extra staff.
+        <p className="mt-5 text-base sm:text-lg text-white/85 max-w-2xl mx-auto leading-relaxed">
+          You already heard the demo. You already saw the numbers. The only
+          question left is how many more calls you want to lose before you
+          fix this.
         </p>
 
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <div className="mt-10 flex flex-wrap justify-center gap-4">
           <a
             href="#hero"
-            className="inline-block px-6 py-3 rounded-xl bg-white text-[#3c35d3] font-bold uppercase text-sm sm:text-base"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-[#3c35d3] font-bold uppercase text-sm sm:text-base hover:bg-white/95 transition-colors shadow-xl"
           >
-            Try the Demo Now
+            Try It Again
           </a>
           <a
             href="#calculator"
-            className="inline-block px-6 py-3 rounded-xl border border-white/50 text-white font-bold uppercase text-sm sm:text-base"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl border-2 border-white/50 text-white font-bold uppercase text-sm sm:text-base hover:bg-white/10 transition-colors"
           >
-            See Your Revenue Loss
+            See Your Numbers
           </a>
         </div>
 
-        <p className="mt-6 text-sm text-white/90">
-          14-day trial. Full refund if you don’t recover at least 5 bookings in your first month.
-        </p>
-        <p className="mt-3 text-xs sm:text-sm bg-white/10 inline-block px-4 py-2 rounded-md">
-          We onboard a limited number of businesses each month—spots fill quickly.
-        </p>
+        <div className="mt-8 inline-block rounded-lg bg-white/10 px-5 py-3">
+          <p className="text-sm text-white/90">
+            We onboard a limited number of businesses each month so we can
+            set each one up properly.{" "}
+            <span className="font-semibold text-white">
+              If you&apos;re reading this, there&apos;s still a spot open.
+            </span>
+          </p>
+        </div>
       </div>
     </section>
   );

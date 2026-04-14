@@ -25,7 +25,7 @@ function Frame134() {
 
 function Group52() {
   return (
-    <div className="font-['Grift:Extra_Bold',sans-serif] text-center uppercase text-xl sm:text-2xl md:text-3xl lg:text-[42.755px]">
+    <div className="font-sans text-center uppercase text-xl sm:text-2xl md:text-3xl lg:text-[42.755px]">
       <p
         className="font-bold bg-gradient-to-b from-white to-[#bababa] bg-clip-text"
         style={{ WebkitTextFillColor: "transparent" }}
@@ -39,7 +39,7 @@ function Group52() {
 function Frame5() {
   return (
     <button className="w-[200px] cursor-pointer h-[50px] bg-[#7711e5] rounded-[26px] flex items-center justify-center">
-      <p className="font-['Cottorway_Pro:SemiBold',sans-serif] text-[15px] text-white tracking-[0.6px] uppercase">
+      <p className="font-sans font-semibold text-[15px] text-white tracking-[0.6px] uppercase">
         Talk to an AI Agent
       </p>
     </button>
@@ -145,12 +145,11 @@ function Frame141() {
 function Frame142() {
   return (
     <div className="content-stretch flex flex-col gap-[10px] items-start leading-[normal] not-italic relative shrink-0 text-white w-full max-w-[372px] whitespace-pre-wrap">
-      <p className="font-['Grift:Bold',sans-serif] relative shrink-0 text-[15px] sm:text-[17.5px] uppercase w-full">
-        1. Customer Calls
+      <p className="font-sans font-bold relative shrink-0 text-[15px] sm:text-[17.5px] uppercase w-full">
+        1. Someone Calls You
       </p>
-      <div className="font-['Grift:Medium',sans-serif] relative shrink-0 text-[13px] sm:text-[15px] w-full">
-        <p className="mb-0">Your business number rings and InstaFlow answers in</p>
-        <p>under 3 rings with a natural, professional greeting.</p>
+      <div className="font-sans relative shrink-0 text-[13px] sm:text-[15px] w-full">
+        <p>&ldquo;Hi, thanks for calling [Your Business] — this is Mia, how can I help?&rdquo; Answered in under 3 rings, every time.</p>
       </div>
     </div>
   );
@@ -257,12 +256,11 @@ function Frame144() {
 function Frame145() {
   return (
     <div className="content-stretch flex flex-col gap-[10px] items-start leading-[normal] not-italic relative shrink-0 text-white w-full max-w-[372px] whitespace-pre-wrap">
-      <p className="font-['Grift:Bold',sans-serif] relative shrink-0 text-[15px] sm:text-[17.5px] uppercase w-full">
-        2. Appointment Booked
+      <p className="font-sans font-bold relative shrink-0 text-[15px] sm:text-[17.5px] uppercase w-full">
+        2. They Book on the Spot
       </p>
-      <p className="font-['Grift:Medium',sans-serif] relative shrink-0 text-[13px] sm:text-[15px] w-full">
-        It understands what they want, answers common questions, and books them
-        straight into your calendar—no callbacks or manual entry.
+      <p className="font-sans relative shrink-0 text-[13px] sm:text-[15px] w-full">
+        She knows your services, prices, and availability. Answers their questions, picks a time, books it. The caller never realizes they&apos;re not talking to your front desk.
       </p>
     </div>
   );
@@ -347,12 +345,11 @@ function Frame147() {
 function Frame148() {
   return (
     <div className="content-stretch flex flex-col gap-[10px] items-start leading-[normal] not-italic relative shrink-0 text-white w-full max-w-[372px] whitespace-pre-wrap">
-      <p className="font-['Grift:Bold',sans-serif] relative shrink-0 text-[15px] sm:text-[17.5px] uppercase w-full">
-        3. Confirmed & Logged
+      <p className="font-sans font-bold relative shrink-0 text-[15px] sm:text-[17.5px] uppercase w-full">
+        3. You See Everything
       </p>
-      <p className="font-['Grift:Medium',sans-serif] relative shrink-0 text-[13px] sm:text-[15px] w-full">
-        The caller gets a confirmation, and your team sees the full call and
-        booking in one place—ready for the appointment.
+      <p className="font-sans relative shrink-0 text-[13px] sm:text-[15px] w-full">
+        Full transcript, booking details, caller info — in your dashboard before you finish your current client. No sticky notes, no &ldquo;who called?&rdquo;
       </p>
     </div>
   );
@@ -382,11 +379,11 @@ function Frame139() {
 function Frame138() {
   return (
     <div className="content-stretch flex flex-col gap-6 sm:gap-[36px] items-center relative shrink-0 w-full max-w-[464px]">
-      <p className="font-['Grift:Medium',sans-serif] leading-snug not-italic relative shrink-0 text-[#aaa] text-sm sm:text-base md:text-[18.5px] w-full whitespace-pre-wrap">
+      <p className="font-sans leading-snug not-italic relative shrink-0 text-[#aaa] text-sm sm:text-base md:text-[18.5px] w-full whitespace-pre-wrap">
         <span className="leading-[normal] text-white">
-          Setup in under 2 weeks.
+          You keep your existing phone number.
         </span>
-        <span className="leading-[normal]">{` No extra front-desk hiring, no retraining your team, and no missed high-intent calls.`}</span>
+        <span className="leading-[normal]">{` We plug in behind it. Your callers never know anything changed — except they stop getting voicemail.`}</span>
       </p>
       <Frame139 />
     </div>

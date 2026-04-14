@@ -30,6 +30,8 @@ export type UseVapiAgentOptions = {
    * does NOT lock the picker.
    */
   voiceId?: string;
+  /** Spoken languages the agent should handle. Defaults to ['en']. */
+  languages?: Array<'en' | 'hi'>;
   /**
    * Voice catalog the picker exposes. Defaults to the hardcoded
    * AVAILABLE_VOICES so legacy callers keep working; server pages should
@@ -60,6 +62,7 @@ export function useVapiAgent(opts: UseVapiAgentOptions) {
     greeting,
     voiceId,
     availableVoices,
+    languages,
     saveEndpoint = '/api/conversations',
     saveMeta,
   } = opts;
@@ -294,6 +297,7 @@ export function useVapiAgent(opts: UseVapiAgentOptions) {
         systemPrompt: adjustedPrompt,
         greeting: adjustedGreeting,
         voiceId: selectedVoice.id,
+        languages,
       });
 
       await vapi.start(assistant as any);

@@ -33,6 +33,9 @@ export default async function Page({ searchParams }: PageProps) {
         systemPrompt: client.systemPrompt,
         greeting: client.greeting,
         voiceId: client.voiceId || DEFAULT_VOICE_ID,
+        languages: (Array.isArray(client.languages) && client.languages.length > 0
+          ? client.languages
+          : ['en']) as Array<'en' | 'hi'>,
       }
     : {
         slug: 'demo',
@@ -40,6 +43,7 @@ export default async function Page({ searchParams }: PageProps) {
         systemPrompt: INSTAFLOW_SYSTEM_INSTRUCTION,
         greeting: "Hi, thanks for calling GlowLift Medspa — this is Mia, how can I help you today?",
         voiceId: DEFAULT_VOICE_ID,
+        languages: ['en'] as Array<'en' | 'hi'>,
       };
 
   return <Home agentConfig={agentConfig} availableVoices={availableVoices} />;

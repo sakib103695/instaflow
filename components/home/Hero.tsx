@@ -6,7 +6,7 @@ import { useVapiAgent } from "@/hooks/useVapiAgent";
 import type { VoiceOption } from "@/constants";
 import type { AgentConfig } from "@/lib/clientTypes";
 
-const ROTATING_WORDS = ["Spa", "MedSpa", "Barbershop"];
+const ROTATING_WORDS = ["Spa", "MedSpa", "Barbershop", "Salon", "Clinic"];
 /* ================= BACKGROUND LAYER: blur columns + starry ================= */
 function HeroBackground() {
   return (
@@ -40,12 +40,12 @@ function HeroHeadline() {
 
   return (
     <div className="flex flex-col items-center gap-4 text-center max-w-[640px] px-4 relative z-10">
-      <div className="font-['Grift:Extra_Bold',sans-serif] mt-8 text-center not-italic text-[24px] sm:text-[38px] md:text-[42.755px] leading-[1.15] uppercase">
+      <div className="font-sans mt-8 text-center not-italic text-[24px] sm:text-[38px] md:text-[42.755px] leading-[1.15] uppercase">
         <p
           className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa]"
           style={{ WebkitTextFillColor: "transparent" }}
         >
-          Turn Every Call Into a Booking.
+          Your Front Desk Is Losing You Money.
         </p>
         <p
           className="min-h-[1.2em] mt-2 bg-clip-text font-bold bg-gradient-to-b from-[#fff3a3] to-[#ffd23f] transition-opacity duration-300"
@@ -58,9 +58,10 @@ function HeroHeadline() {
         </p>
       </div>
       <p className="text-[#c8c8c8] text-sm sm:text-[15px] leading-relaxed max-w-[560px]">
-        Missed calls = lost bookings. Our AI receptionist answers every call 24/7,
-        books appointments in real time, and sounds like a real person—so you
-        never lose a lead to voicemail again.
+        Right now, 35% of your calls go to voicemail. Each one is a booking that
+        walks to your competitor. Hit the button below and talk to an AI that
+        answers like a real receptionist — then imagine it picking up every call
+        your business misses.
       </p>
     </div>
   );
@@ -166,6 +167,7 @@ function VoiceLevelBars({ isActive }: { isActive: boolean }) {
 
 /* ================= MAIN GLASS CARD (original design + functionality) ================= */
 interface HeroCardProps {
+  clientName?: string;
   voices: VoiceOption[];
   selectedVoice: VoiceOption;
   setSelectedVoice: (v: VoiceOption) => void;
@@ -177,6 +179,7 @@ interface HeroCardProps {
 }
 
 function HeroCard({
+  clientName,
   voices,
   selectedVoice,
   setSelectedVoice,
@@ -186,11 +189,14 @@ function HeroCard({
   startConversation,
   stopConversation,
 }: HeroCardProps) {
+  const isPersonalized = clientName && clientName !== 'GlowLift Medspa';
   return (
     <div className="relative w-full max-w-[560px] min-w-0 rounded-[16px] sm:rounded-[20px] p-4 sm:p-6 flex flex-col gap-4 sm:gap-6 overflow-hidden border border-white/10 backdrop-blur-xl shadow-[inset_0_1px_40px_0_rgba(227,222,255,0.2),inset_0_0_56px_-36px_rgba(255,255,255,0.5)] bg-white/[0.06]">
       <div className="absolute inset-0 pointer-events-none bg-[#CD9EFF]/10 blur-[80px] rounded-full w-32 h-32 left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2" />
       <p className="text-center text-base sm:text-lg md:text-[22px] uppercase font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white to-[#8D23FF] relative z-10">
-        Call & Test the AI Receptionist Now
+        {isPersonalized
+          ? `Call ${clientName}\u2019s AI Receptionist`
+          : 'Call & Test the AI Receptionist Now'}
       </p>
       <div className="relative z-10 w-full flex justify-center">
         <img
@@ -285,7 +291,7 @@ function HeroCard({
           ) : (
             <>
               <MessageCircle className="size-5" />
-              Talk to Receptionist
+              {isPersonalized ? `Talk to ${clientName}` : 'Talk to Receptionist'}
             </>
           )}
         </button>
@@ -299,7 +305,7 @@ function HeroCard({
         </button>
       )}
       <p className="text-center text-[11px] sm:text-xs text-white/65 relative z-10">
-        No credit card. Live test in under 60 seconds.
+        No signup. No credit card. You&apos;ll hear the difference in 10 seconds.
       </p>
 
     </div>
@@ -355,6 +361,7 @@ export function Hero({
     systemInstruction: agentConfig.systemPrompt,
     greeting: agentConfig.greeting,
     voiceId: agentConfig.voiceId,
+    languages: agentConfig.languages,
     availableVoices,
     saveMeta: { clientSlug: agentConfig.slug },
   });
@@ -368,6 +375,7 @@ export function Hero({
       <div className="relative z-10 flex flex-col items-center gap-10 w-full max-w-4xl">
         <HeroHeadline />
         <HeroCard
+          clientName={agentConfig.name}
           voices={voices}
           selectedVoice={selectedVoice}
           setSelectedVoice={setSelectedVoice}

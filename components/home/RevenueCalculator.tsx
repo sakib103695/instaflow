@@ -20,11 +20,11 @@ export default function RevenueCalculator() {
     <section id="calculator" className="py-16 sm:py-20 md:py-24 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto text-center">
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">
-          How Much Are You Really Losing?
+          The Math Your Voicemail Won&apos;t Tell You
         </h2>
         <p className="text-white/70 text-base sm:text-lg mt-3 mb-10">
-          Spas, med spas, and salons often don’t know how much revenue they lose
-          when calls go to voicemail. Use the numbers below to see your estimate.
+          Plug in your real numbers. Most business owners who do this for the
+          first time say the same thing: <span className="text-white font-medium">&quot;I had no idea it was that much.&quot;</span>
         </p>
       </div>
 
@@ -99,31 +99,11 @@ export default function RevenueCalculator() {
               href="#hero"
               className="inline-block bg-white text-[#4b14a1] px-6 py-3 rounded-lg font-bold uppercase text-sm"
             >
-              Stop Losing Money — Try Demo Now
+              Hear What Your Callers Would Hear
             </a>
           </div>
         </div>
 
-        <div className="mt-8 grid md:grid-cols-3 gap-3">
-          <div className="rounded-lg border border-white/15 bg-white/5 p-4">
-            <p className="text-white text-sm font-semibold mb-1">Will it sound robotic?</p>
-            <p className="text-white/70 text-xs">
-              No. You get a natural, conversational voice built for front-desk and booking calls.
-            </p>
-          </div>
-          <div className="rounded-lg border border-white/15 bg-white/5 p-4">
-            <p className="text-white text-sm font-semibold mb-1">How long until we’re live?</p>
-            <p className="text-white/70 text-xs">
-              Most businesses are live in 1–2 weeks, including your script and call flow.
-            </p>
-          </div>
-          <div className="rounded-lg border border-white/15 bg-white/5 p-4">
-            <p className="text-white text-sm font-semibold mb-1">What if we don’t see results?</p>
-            <p className="text-white/70 text-xs">
-              Start with a risk-free trial. You only keep it if you see more booked appointments.
-            </p>
-          </div>
-        </div>
       </div>
     </section>
   );

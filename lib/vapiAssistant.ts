@@ -1,4 +1,5 @@
 import { DEFAULT_VOICE_ID, findVoice } from '@/constants';
+import type { Language } from './clientTypes';
 
 /**
  * Builds an INLINE Vapi assistant config that's passed straight to
@@ -18,7 +19,43 @@ export type BuildAssistantOptions = {
   voiceId?: string;
   /** Optional model override (default gpt-4o-mini). */
   model?: string;
+  /** Languages the agent should understand. Defaults to ['en']. */
+  languages?: Language[];
 };
+
+/**
+ * Build the transcriber block based on enabled languages.
+ *
+ *   ['en']       → nova-3 English (lowest latency, highest accuracy for EN).
+ *   ['hi']       → nova-2 Hindi (nova-3 doesn't support Hindi yet).
+ *   ['en','hi']  → nova-2 multi-language detection. Handles Hinglish code-
+ *                  switching mid-sentence, which is the norm for Indian callers.
+ */
+function buildTranscriber(languages: Language[]) {
+  if (languages.length > 1) {
+    return {
+      provider: 'deepgram' as const,
+      model: 'nova-2',
+      language: 'multi' as const,
+      smartFormat: true,
+    };
+  }
+  const only = languages[0] || 'en';
+  if (only === 'hi') {
+    return {
+      provider: 'deepgram' as const,
+      model: 'nova-2',
+      language: 'hi' as const,
+      smartFormat: true,
+    };
+  }
+  return {
+    provider: 'deepgram' as const,
+    model: 'nova-3',
+    language: 'en' as const,
+    smartFormat: true,
+  };
+}
 
 /**
  * The "best human-realtime stack" as of today:
@@ -74,12 +111,7 @@ export function buildInlineAssistant(opts: BuildAssistantOptions) {
       backoffSeconds: 1.0,
     },
 
-    transcriber: {
-      provider: 'deepgram' as const,
-      model: 'nova-3',
-      language: 'en' as const,
-      smartFormat: true,
-    },
+    transcriber: buildTranscriber(opts.languages && opts.languages.length > 0 ? opts.languages : ['en']),
 
     model: {
       provider: 'openai' as const,

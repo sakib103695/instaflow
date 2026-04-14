@@ -255,6 +255,7 @@ function BasicsTab({
         domain: client.domain,
         voiceId: client.voiceId,
         greeting: client.greeting,
+        languages: Array.isArray(client.languages) && client.languages.length > 0 ? client.languages : ['en'],
       }}
       onFinish={onSave}
     >
@@ -271,6 +272,20 @@ function BasicsTab({
             value: v.id,
             label: v.description ? `${v.label} — ${v.description}` : v.label,
           }))}
+        />
+      </Form.Item>
+      <Form.Item
+        label="Languages"
+        name="languages"
+        extra="Pick both to enable auto-detect — the agent will respond in whichever language the caller uses (including Hinglish)."
+      >
+        <Select
+          mode="multiple"
+          size="large"
+          options={[
+            { value: 'en', label: 'English' },
+            { value: 'hi', label: 'Hindi' },
+          ]}
         />
       </Form.Item>
       <Form.Item

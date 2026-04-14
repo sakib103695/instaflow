@@ -12,7 +12,7 @@ function Pill() {
         className="h-[24px] w-[60px] sm:h-[30px] sm:w-[80px] md:w-[100px] lg:w-[135px]"
       />
       <p className="text-white uppercase tracking-[2px] text-[11px] sm:text-[12px] lg:text-[16px]">
-        Your New Receptionist Never Sleeps
+        What Changes When Every Call Gets Answered
       </p>
       <img
         src={RIGHT_ICON_SRC}
@@ -25,18 +25,18 @@ function Pill() {
 
 function Heading() {
   return (
-    <div className="font-['Grift:Extra_Bold',sans-serif] mt-8 mb-12 text-center not-italic text-[24px] sm:text-[38px] md:text-[42.755px] leading-[1.1] uppercase">
+    <div className="font-sans mt-8 mb-12 text-center not-italic text-[24px] sm:text-[38px] md:text-[42.755px] leading-[1.1] uppercase">
       <p
         className="bg-clip-text font-bold bg-gradient-to-b from-white to-[#bababa]"
         style={{ WebkitTextFillColor: "transparent" }}
       >
-        Answers Every Call
+        Zero Missed Calls.
       </p>
       <p
         className="bg-clip-text mx-auto font-bold bg-gradient-to-b from-white to-[#bababa] w-full sm:w-[391px] whitespace-pre-wrap"
         style={{ WebkitTextFillColor: "transparent" }}
       >
-        Books In Real Time
+        Zero Extra Staff.
       </p>
     </div>
   );
@@ -152,12 +152,12 @@ function FeatureCard({
         <FeatureIcon>{icon}</FeatureIcon>
         <div className="flex flex-col gap-[5px]">
           <p
-            className="bg-clip-text bg-gradient-to-b font-['Grift:Bold',sans-serif] from-white to-[#bababa] text-[24px] sm:text-[26px] md:text-[28.75px] leading-[46.555px]"
+            className="bg-clip-text bg-gradient-to-b font-sans from-white to-[#bababa] text-[24px] sm:text-[26px] md:text-[28.75px] leading-[46.555px]"
             style={{ WebkitTextFillColor: "transparent" }}
           >
             {title}
           </p>
-          <div className="font-['Grift:Medium',sans-serif] text-[#989898] text-[16px] sm:text-[17.5px] leading-normal">
+          <div className="font-sans text-[#989898] text-[16px] sm:text-[17.5px] leading-normal">
             {description}
           </div>
         </div>
@@ -187,33 +187,36 @@ export function Security() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0 py-6 sm:py-8 md:py-10 flex flex-col gap-[24px] sm:gap-[32px] md:gap-[44px]">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] sm:gap-[20px]">
           <FeatureCard
-            title="Answers Every Call"
+            title="Picks Up in 2 Rings"
             description={
               <p>
-                No hold music, no voicemail. Callers are answered in seconds
-                with a natural, front-desk voice—day or night.
+                While your competitor sends callers to voicemail, yours get a
+                warm, natural voice that knows your services, hours, and
+                prices. Every. Single. Time.
               </p>
             }
             icon={<StarsIcon />}
           />
 
           <FeatureCard
-            title="Books Into Your Calendar"
+            title="Books While You Work"
             description={
               <p>
-                Understands what the caller wants, checks your availability, and
-                books the appointment into your system—no manual entry.
+                &ldquo;I&apos;d like a facial on Thursday at 2.&rdquo; Done.
+                Booked into your calendar before the call ends. No
+                phone tag, no callbacks, no double-bookings.
               </p>
             }
             icon={<CallRingingIcon />}
           />
 
           <FeatureCard
-            title="Works 24/7"
+            title="Never Calls in Sick"
             description={
               <p>
-                Handles after-hours, weekends, and holidays so you and your team
-                can focus on clients in the chair or on the floor.
+                6 AM, 11 PM, Christmas morning. It doesn&apos;t matter.
+                Your highest-intent callers — the ones ready to book right
+                now — never hit a dead end again.
               </p>
             }
             icon={<EarthIcon />}

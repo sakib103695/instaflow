@@ -1,5 +1,5 @@
 import { END_CALL_SIGNAL, CALL_CONNECTED_CUE } from '@/constants';
-import type { StructuredContext } from './clientTypes';
+import type { StructuredContext, Language } from './clientTypes';
 import { getSetting } from './mongodb';
 
 /**
@@ -114,24 +114,60 @@ export async function resolveStructuringPrompt(): Promise<string> {
 export async function composeSystemInstructionAsync(
   ctx: StructuredContext,
   greeting: string,
+  languages: Language[] = ['en'],
 ): Promise<string> {
   const base = await resolveBasePrompt();
-  return composeFromBase(base, ctx, greeting);
+  return composeFromBase(base, ctx, greeting, languages);
 }
 
 export function composeSystemInstruction(
   ctx: StructuredContext,
   greeting: string,
+  languages: Language[] = ['en'],
 ): string {
-  return composeFromBase(BASE_AGENT_INSTRUCTION, ctx, greeting);
+  return composeFromBase(BASE_AGENT_INSTRUCTION, ctx, greeting, languages);
+}
+
+/**
+ * Build the "what languages to speak" directive. Only added when the client
+ * has multi-language enabled or Hindi-only; English-only falls through.
+ */
+function languageBlock(languages: Language[]): string {
+  const hasEn = languages.includes('en');
+  const hasHi = languages.includes('hi');
+  if (hasEn && hasHi) {
+    return [
+      '',
+      '## Language',
+      "This business serves callers who may speak English, Hindi, or a mix of both (Hinglish — common in India where speakers code-switch mid-sentence).",
+      '- Detect the caller\'s language from their first words and respond in the same language.',
+      '- If they speak Hinglish (mixing), match their style. Don\'t correct them into pure Hindi or pure English — mirror how they talk.',
+      '- Numbers, times, prices: read them the way a local would. Hindi for Hindi sentences, English for English sentences.',
+      '- If unsure, default to English.',
+    ].join('\n');
+  }
+  if (hasHi) {
+    return [
+      '',
+      '## Language',
+      'You must speak Hindi on this call. Use natural, conversational Hindi — the way a warm receptionist in North India would talk.',
+      '- English loanwords that are standard in spoken Hindi (appointment, booking, service, email, phone) are fine — don\'t force Sanskrit-purist translations.',
+      '- Numbers, times, prices: say them the way Hindi speakers naturally do (e.g. "do baje", "paanch sau rupaye").',
+      '- If the caller suddenly switches to English, keep going in Hindi but stay warm and accommodating.',
+    ].join('\n');
+  }
+  return '';
 }
 
 function composeFromBase(
   base: string,
   ctx: StructuredContext,
   greeting: string,
+  languages: Language[],
 ): string {
   const lines: string[] = [base];
+  const langBlock = languageBlock(languages);
+  if (langBlock) lines.push(langBlock);
 
   lines.push('');
   lines.push(`## Business`);

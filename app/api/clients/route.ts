@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getClientsCollection } from '@/lib/mongodb';
-import { EMPTY_STRUCTURED_CONTEXT, slugify } from '@/lib/clientTypes';
+import { EMPTY_STRUCTURED_CONTEXT, slugify, defaultGreeting, type Language } from '@/lib/clientTypes';
 import { composeSystemInstruction } from '@/lib/agentPrompt';
 
 export const runtime = 'nodejs';
@@ -51,7 +51,11 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, domain, voiceId = 'Kore' } = body ?? {};
+    const { name, domain, voiceId = 'Kore', languages: rawLangs } = body ?? {};
+    const languages: Language[] =
+      Array.isArray(rawLangs) && rawLangs.length > 0
+        ? (rawLangs.filter((l: unknown) => l === 'en' || l === 'hi') as Language[])
+        : ['en'];
 
     if (!name || typeof name !== 'string') {
       return NextResponse.json({ error: 'name is required' }, { status: 400 });
@@ -76,23 +80,19 @@ export async function POST(request: Request) {
     const isDefault = existingCount === 0;
 
     const now = new Date().toISOString();
-    const greeting = `Hi, thanks for calling ${name} — this is Mia, how can I help you today?`;
+    const greeting = defaultGreeting(name, languages);
+    const ctx = { ...EMPTY_STRUCTURED_CONTEXT, business: { ...EMPTY_STRUCTURED_CONTEXT.business, name, website: domain } };
     const doc = {
       slug,
       name,
       domain,
       voiceId,
+      languages,
       isDefault,
       rawScrape: '',
       scrapeMeta: { pagesScraped: 0, method: 'manual' as const, scrapedAt: null },
-      structuredContext: {
-        ...EMPTY_STRUCTURED_CONTEXT,
-        business: { ...EMPTY_STRUCTURED_CONTEXT.business, name, website: domain },
-      },
-      systemPrompt: composeSystemInstruction(
-        { ...EMPTY_STRUCTURED_CONTEXT, business: { ...EMPTY_STRUCTURED_CONTEXT.business, name, website: domain } },
-        greeting,
-      ),
+      structuredContext: ctx,
+      systemPrompt: composeSystemInstruction(ctx, greeting, languages),
       greeting,
       createdAt: now,
       updatedAt: now,

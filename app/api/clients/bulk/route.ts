@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getClientsCollection } from '@/lib/mongodb';
-import { EMPTY_STRUCTURED_CONTEXT, slugify } from '@/lib/clientTypes';
+import { EMPTY_STRUCTURED_CONTEXT, slugify, defaultGreeting, type Language } from '@/lib/clientTypes';
 import { composeSystemInstruction } from '@/lib/agentPrompt';
 
 export const runtime = 'nodejs';
@@ -12,7 +12,21 @@ type BulkRequest = {
   rows: BulkRow[];
   domainColumn: string;
   nameColumn?: string;
+  languagesColumn?: string;
+  /** Fallback languages when a row has none in its cell. Defaults to ['en']. */
+  defaultLanguages?: Language[];
 };
+
+/** Parse a cell that might look like "en", "hi", "en,hi", "English", etc. */
+function parseLanguagesCell(raw: unknown): Language[] | null {
+  if (!raw) return null;
+  const s = String(raw).toLowerCase().trim();
+  if (!s) return null;
+  const langs: Language[] = [];
+  if (/\ben\b|english/.test(s)) langs.push('en');
+  if (/\bhi\b|hindi|hinglish/.test(s)) langs.push('hi');
+  return langs.length > 0 ? langs : null;
+}
 
 /**
  * POST /api/clients/bulk
@@ -31,6 +45,11 @@ export async function POST(request: Request) {
     const rows = Array.isArray(body.rows) ? body.rows : null;
     const domainColumn = String(body.domainColumn || '').trim();
     const nameColumn = body.nameColumn ? String(body.nameColumn).trim() : '';
+    const languagesColumn = body.languagesColumn ? String(body.languagesColumn).trim() : '';
+    const defaultLanguages: Language[] =
+      Array.isArray(body.defaultLanguages) && body.defaultLanguages.length > 0
+        ? (body.defaultLanguages.filter((l) => l === 'en' || l === 'hi') as Language[])
+        : ['en'];
 
     if (!rows || rows.length === 0) {
       return NextResponse.json({ error: 'rows array required' }, { status: 400 });
@@ -79,8 +98,11 @@ export async function POST(request: Request) {
           .join(' ') ||
         rawDomain;
 
+      const rowLanguages = languagesColumn ? parseLanguagesCell(row[languagesColumn]) : null;
+      const languages: Language[] = rowLanguages ?? defaultLanguages;
+
       const now = new Date().toISOString();
-      const greeting = `Hi, thanks for calling ${name} — this is Mia, how can I help you today?`;
+      const greeting = defaultGreeting(name, languages);
       const structuredContext = {
         ...EMPTY_STRUCTURED_CONTEXT,
         business: { ...EMPTY_STRUCTURED_CONTEXT.business, name, website: rawDomain },
@@ -96,8 +118,9 @@ export async function POST(request: Request) {
         rawScrape: '',
         scrapeMeta: { pagesScraped: 0, method: 'manual' as const, scrapedAt: null },
         structuredContext,
-        systemPrompt: composeSystemInstruction(structuredContext, greeting),
+        systemPrompt: composeSystemInstruction(structuredContext, greeting, languages),
         greeting,
+        languages,
         // Stash the original spreadsheet row so the export endpoint can echo
         // every original column back to the user later.
         sourceRow: row,

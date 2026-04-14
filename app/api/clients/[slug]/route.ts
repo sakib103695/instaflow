@@ -41,6 +41,9 @@ export async function PATCH(req: Request, { params }: RouteCtx) {
     if (typeof body.domain === 'string') allowed.domain = body.domain;
     if (typeof body.voiceId === 'string') allowed.voiceId = body.voiceId;
     if (typeof body.greeting === 'string') allowed.greeting = body.greeting;
+    if (Array.isArray(body.languages)) {
+      allowed.languages = body.languages.filter((l: unknown) => l === 'en' || l === 'hi');
+    }
     if (body.structuredContext && typeof body.structuredContext === 'object') {
       allowed.structuredContext = body.structuredContext;
     }
@@ -57,10 +60,14 @@ export async function PATCH(req: Request, { params }: RouteCtx) {
     let systemPrompt: string | undefined;
     if (typeof body.systemPrompt === 'string' && body.systemPrompt.trim()) {
       systemPrompt = body.systemPrompt;
-    } else if (allowed.structuredContext || allowed.greeting) {
+    } else if (allowed.structuredContext || allowed.greeting || allowed.languages) {
+      const effectiveLanguages =
+        (allowed.languages as Array<'en' | 'hi'> | undefined) ??
+        (Array.isArray(existing.languages) ? (existing.languages as Array<'en' | 'hi'>) : ['en']);
       systemPrompt = composeSystemInstruction(
         (allowed.structuredContext as StructuredContext) ?? existing.structuredContext,
         (allowed.greeting as string) ?? existing.greeting,
+        effectiveLanguages,
       );
     }
     if (systemPrompt) allowed.systemPrompt = systemPrompt;

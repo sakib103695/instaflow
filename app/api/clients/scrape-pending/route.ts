@@ -3,6 +3,7 @@ import { getClientsCollection } from '@/lib/mongodb';
 import { scrapeSite } from '@/lib/scraper';
 import { structureContextFromRawText } from '@/lib/structureContext';
 import { composeSystemInstructionAsync } from '@/lib/agentPrompt';
+import { defaultGreeting, type Language } from '@/lib/clientTypes';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -66,8 +67,12 @@ export async function POST() {
       structuredContext.business.name = businessName;
       if (!structuredContext.business.website) structuredContext.business.website = domain;
 
-      const greeting = `Hi, thanks for calling ${businessName} — this is ${structuredContext.personaName || 'Mia'}, how can I help you today?`;
-      const systemPrompt = await composeSystemInstructionAsync(structuredContext, greeting);
+      const languages = (Array.isArray(claimed.languages) && claimed.languages.length > 0
+        ? (claimed.languages as Language[])
+        : ['en']) as Language[];
+      const personaName = structuredContext.personaName || 'Mia';
+      const greeting = defaultGreeting(businessName, languages, personaName);
+      const systemPrompt = await composeSystemInstructionAsync(structuredContext, greeting, languages);
 
       await col.updateOne(
         { slug },
