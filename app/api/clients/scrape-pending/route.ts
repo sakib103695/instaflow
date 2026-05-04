@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getClientsCollection } from '@/lib/mongodb';
-import { scrapeSite } from '@/lib/scraper';
+import { scrapeSite, type ScrapeDepth } from '@/lib/scraper';
+import { getSetting } from '@/lib/mongodb';
 import { structureContextFromRawText } from '@/lib/structureContext';
 import { composeSystemInstructionAsync } from '@/lib/agentPrompt';
 import { defaultGreeting, type Language } from '@/lib/clientTypes';
@@ -56,7 +57,8 @@ export async function POST() {
     const domain = String(claimed.domain);
 
     try {
-      const scrape = await scrapeSite(domain);
+      const depth = ((await getSetting<string>('scrapeDepth')) || 'smart') as ScrapeDepth;
+      const scrape = await scrapeSite(domain, depth);
       const rawText = scrape.combined;
       if (!rawText || rawText.trim().length < 100) {
         await col.updateOne(

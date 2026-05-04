@@ -16,8 +16,21 @@
  * return the raw HTML — the structuring LLM is robust enough to handle it.
  */
 
-const MAX_PAGES = 12;
+/**
+ * Scrape depth presets:
+ *   - homepage: just the home page. Fastest, lowest cost, but the agent
+ *     misses everything beyond what's linked from the front door.
+ *   - smart   : home + only sub-pages that look like services / pricing /
+ *     hours / contact / FAQ / booking. Skips blog, careers, legal,
+ *     auth pages, etc. Best price/quality for a receptionist agent.
+ *   - deep    : the original behavior — pull up to 12 pages even if some
+ *     are blog/careers noise. Use only when you really need everything.
+ */
+export type ScrapeDepth = 'homepage' | 'smart' | 'deep';
+
 const PER_PAGE_TIMEOUT_MS = 15000;
+
+// Pages a receptionist actually needs. Each match adds +10 to the score.
 const HIGH_PRIORITY_KEYWORDS = [
   'service',
   'pricing',
@@ -31,6 +44,42 @@ const HIGH_PRIORITY_KEYWORDS = [
   'book',
   'appointment',
   'location',
+  'team',
+  'staff',
+];
+
+// Pages that are almost always noise for a phone agent. Each match
+// subtracts 100 — strong enough to keep them out of "smart" mode entirely.
+const NEGATIVE_KEYWORDS = [
+  'blog',
+  'news',
+  'press',
+  'media',
+  'event',
+  'career',
+  'job',
+  'hiring',
+  'login',
+  'signin',
+  'signup',
+  'register',
+  'account',
+  'cart',
+  'checkout',
+  'privacy',
+  'terms',
+  'cookie',
+  'legal',
+  'sitemap',
+  'rss',
+  'feed',
+  'gallery',
+  'portfolio',
+  'archive',
+  'tag/',
+  'category/',
+  'author/',
+  '/page/',
 ];
 
 export type ScrapeResult = {
@@ -109,10 +158,24 @@ async function fetchDirect(targetUrl: string): Promise<string> {
 }
 
 /**
- * Extract markdown links from a Jina-style markdown blob and return same-origin
- * absolute URLs, prioritizing keywords a support agent actually cares about.
+ * Score a URL by how likely it is to contain receptionist-relevant content.
+ * Positive = useful. Negative = noise (blog, careers, legal, etc).
  */
-function extractInternalLinks(markdown: string, origin: string): string[] {
+function scoreUrl(u: string): number {
+  const lower = u.toLowerCase();
+  let s = 0;
+  for (const kw of HIGH_PRIORITY_KEYWORDS) if (lower.includes(kw)) s += 10;
+  for (const kw of NEGATIVE_KEYWORDS) if (lower.includes(kw)) s -= 100;
+  // Shorter paths first (probably top-level pages, not deep blog posts).
+  s -= u.split('/').length;
+  return s;
+}
+
+/**
+ * Extract markdown links from a Jina-style markdown blob and return same-origin
+ * absolute URLs, sorted by relevance. Caller decides how many to keep.
+ */
+function extractInternalLinks(markdown: string, origin: string): Array<{ url: string; score: number }> {
   const linkRegex = /\[[^\]]*\]\(([^)\s]+)\)/g;
   const found = new Set<string>();
   let match: RegExpExecArray | null;
@@ -126,17 +189,9 @@ function extractInternalLinks(markdown: string, origin: string): string[] {
       /* ignore bad URLs */
     }
   }
-
-  const all = Array.from(found);
-  const score = (u: string) => {
-    const lower = u.toLowerCase();
-    let s = 0;
-    for (const kw of HIGH_PRIORITY_KEYWORDS) if (lower.includes(kw)) s += 10;
-    // shorter paths first (probably top-level pages)
-    s -= u.split('/').length;
-    return s;
-  };
-  return all.sort((a, b) => score(b) - score(a));
+  return Array.from(found)
+    .map((url) => ({ url, score: scoreUrl(url) }))
+    .sort((a, b) => b.score - a.score);
 }
 
 function extractTitle(markdown: string, fallback: string): string {
@@ -147,7 +202,10 @@ function extractTitle(markdown: string, fallback: string): string {
   return fallback;
 }
 
-export async function scrapeSite(rawUrl: string): Promise<ScrapeResult> {
+export async function scrapeSite(
+  rawUrl: string,
+  depth: ScrapeDepth = 'smart',
+): Promise<ScrapeResult> {
   const url = normalizeUrl(rawUrl);
   if (!isSafePublicUrl(url)) {
     return {
@@ -183,14 +241,24 @@ export async function scrapeSite(rawUrl: string): Promise<ScrapeResult> {
 
   pages.push({ url, title: extractTitle(homeMd, url), content: homeMd });
 
-  // 2. Discover and fetch additional pages (only if we got markdown from Jina).
-  if (method === 'jina') {
-    const candidates = extractInternalLinks(homeMd, origin)
-      .filter((u) => u !== url)
-      .slice(0, MAX_PAGES - 1);
+  // 2. Discover and fetch additional pages, gated by depth.
+  if (method === 'jina' && depth !== 'homepage') {
+    const all = extractInternalLinks(homeMd, origin).filter((c) => c.url !== url);
+
+    let chosen: string[];
+    if (depth === 'smart') {
+      // Only fetch pages that scored > 0 (i.e. matched at least one
+      // receptionist-relevant keyword AND weren't penalized as noise).
+      // Cap at 6 — typically that's home + services + pricing + hours +
+      // contact + faq, which is everything an agent needs.
+      chosen = all.filter((c) => c.score > 0).slice(0, 6).map((c) => c.url);
+    } else {
+      // 'deep' — keep the original behavior for users who really want it.
+      chosen = all.slice(0, 11).map((c) => c.url);
+    }
 
     const results = await Promise.allSettled(
-      candidates.map(async (link) => {
+      chosen.map(async (link) => {
         const md = await fetchViaJina(link);
         return { url: link, title: extractTitle(md, link), content: md };
       }),

@@ -43,6 +43,7 @@ type SettingsDoc = {
   geminiApiKey?: SecretState;
   basePrompt?: string | null;
   structuringPrompt?: string | null;
+  scrapeDepth?: string | null;
 };
 
 type PromptDefaults = {
@@ -168,6 +169,11 @@ export default function AdminSettingsPage() {
   const [structuringSaved, setStructuringSaved] = useState('');
   const [savingStructuring, setSavingStructuring] = useState(false);
 
+  // Scrape depth — controls how aggressively scrapeSite() crawls a site.
+  const [scrapeDepth, setScrapeDepth] = useState<string>('smart');
+  const [scrapeDepthSaved, setScrapeDepthSaved] = useState<string>('smart');
+  const [savingScrapeDepth, setSavingScrapeDepth] = useState(false);
+
   const loadSettings = async () => {
     const res = await fetch('/api/admin/settings');
     if (res.ok) {
@@ -182,6 +188,27 @@ export default function AdminSettingsPage() {
       const structuring = (json.structuringPrompt as string) || '';
       setStructuringDraft(structuring);
       setStructuringSaved(structuring);
+      const depth = (json.scrapeDepth as string) || 'smart';
+      setScrapeDepth(depth);
+      setScrapeDepthSaved(depth);
+    }
+  };
+
+  const saveScrapeDepth = async () => {
+    setSavingScrapeDepth(true);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scrapeDepth }),
+      });
+      if (!res.ok) throw new Error('Save failed');
+      setScrapeDepthSaved(scrapeDepth);
+      antdMessage.success('Scrape depth saved.');
+    } catch (err) {
+      antdMessage.error(err instanceof Error ? err.message : 'Save failed');
+    } finally {
+      setSavingScrapeDepth(false);
     }
   };
 
@@ -397,6 +424,46 @@ export default function AdminSettingsPage() {
               />
             </Space>
           )}
+
+          {/* ===== Scraping ===== */}
+          <Divider style={{ borderColor: 'rgba(91,33,182,0.3)' }}>
+            <Text type="secondary">Site scraping</Text>
+          </Divider>
+          <div>
+            <Text strong style={{ color: 'rgba(255,255,255,0.92)', display: 'block', marginBottom: 4 }}>
+              Scrape depth
+            </Text>
+            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
+              How much of each client&apos;s website we pull when building their agent&apos;s knowledge.
+              &quot;Smart&quot; (recommended) skips blog/careers/legal noise and only grabs pages a receptionist
+              needs.
+            </Text>
+            <Space>
+              <Select
+                style={{ minWidth: 360 }}
+                value={scrapeDepth}
+                onChange={setScrapeDepth}
+                options={[
+                  { value: 'homepage', label: 'Homepage only — 1 page, fastest, cheapest' },
+                  { value: 'smart', label: 'Smart — homepage + service/pricing/contact pages (default)' },
+                  { value: 'deep', label: 'Deep — up to 12 pages including some noise' },
+                ]}
+              />
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                loading={savingScrapeDepth}
+                disabled={scrapeDepth === scrapeDepthSaved}
+                onClick={saveScrapeDepth}
+              >
+                Save
+              </Button>
+            </Space>
+            <Paragraph type="secondary" style={{ fontSize: 11, marginTop: 8, marginBottom: 0 }}>
+              Only affects future scrapes. Re-scrape an existing client from its edit page to
+              apply a new depth.
+            </Paragraph>
+          </div>
 
           {/* ===== Prompts ===== */}
           <Divider style={{ borderColor: 'rgba(91,33,182,0.3)' }}>

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getClientsCollection } from '@/lib/mongodb';
-import { scrapeSite } from '@/lib/scraper';
+import { getClientsCollection, getSetting } from '@/lib/mongodb';
+import { scrapeSite, type ScrapeDepth } from '@/lib/scraper';
 import { structureContextFromRawText } from '@/lib/structureContext';
 import { composeSystemInstructionAsync } from '@/lib/agentPrompt';
 import { defaultGreeting, type Language } from '@/lib/clientTypes';
@@ -45,7 +45,8 @@ export async function POST(req: Request, { params }: RouteCtx) {
     if (manualText && manualText.trim().length > 0) {
       rawText = manualText.trim();
     } else {
-      const scrape = await scrapeSite(domain);
+      const depth = ((await getSetting<string>('scrapeDepth')) || 'smart') as ScrapeDepth;
+      const scrape = await scrapeSite(domain, depth);
       rawText = scrape.combined;
       scrapeMeta = {
         pagesScraped: scrape.pages.length,

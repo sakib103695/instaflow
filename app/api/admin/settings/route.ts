@@ -18,6 +18,8 @@ const KNOWN_KEYS = [
   // lib/agentPrompt.ts". Users can tweak these at runtime without redeploy.
   'basePrompt',
   'structuringPrompt',
+  // Scrape depth: 'homepage' | 'smart' | 'deep'. Empty/unset = smart.
+  'scrapeDepth',
 ] as const;
 
 /** Keys whose value is a secret — GET returns a mask instead of the raw string. */
