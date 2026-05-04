@@ -583,8 +583,10 @@ export default function AdminSettingsPage() {
             <Text type="secondary">Site structuring model</Text>
           </Divider>
           <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            Which OpenRouter model analyzes a scraped website into the structured JSON the agent uses.
-            Cheapest models are listed first. Leave empty to fall back to Gemini 2.5 Pro direct.
+            Which OpenRouter model analyzes a scraped website into the structured JSON the agent
+            uses. Cheapest first. Each row shows{' '}
+            <span style={{ fontFamily: 'monospace' }}>input / output $/M tokens · context</span>.
+            Leave empty to fall back to Gemini 2.5 Pro direct.
           </Paragraph>
 
           {modelError && (
@@ -623,38 +625,47 @@ export default function AdminSettingsPage() {
                     .includes(input.toLowerCase())
                 }
                 listHeight={480}
-                options={filtered.map((m) => ({
-                  value: m.id,
-                  searchText: `${m.id} ${m.name}`,
-                  label: (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                      <div style={{ minWidth: 0, overflow: 'hidden' }}>
-                        <div
+                options={filtered.map((m) => {
+                  const price = `${formatPrice(m.promptPerM)} / ${formatPrice(m.completionPerM)}`;
+                  const ctx = m.contextLength ? formatContext(m.contextLength) : '';
+                  return {
+                    value: m.id,
+                    searchText: `${m.id} ${m.name}`,
+                    label: (
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          gap: 12,
+                        }}
+                      >
+                        <span
                           style={{
                             color: 'rgba(255,255,255,0.95)',
                             textOverflow: 'ellipsis',
                             overflow: 'hidden',
                             whiteSpace: 'nowrap',
+                            minWidth: 0,
                           }}
                         >
                           {m.name}
-                        </div>
-                        <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11 }}>{m.id}</div>
+                        </span>
+                        <span
+                          style={{
+                            color: 'rgba(255,255,255,0.7)',
+                            fontSize: 12,
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0,
+                            fontFamily: 'monospace',
+                          }}
+                        >
+                          {price} · {ctx}
+                        </span>
                       </div>
-                      <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'center' }}>
-                        <Tag color="purple" style={{ margin: 0 }}>
-                          in {formatPrice(m.promptPerM)}/M
-                        </Tag>
-                        <Tag color="blue" style={{ margin: 0 }}>
-                          out {formatPrice(m.completionPerM)}/M
-                        </Tag>
-                        {m.contextLength ? (
-                          <Tag style={{ margin: 0 }}>{formatContext(m.contextLength)}</Tag>
-                        ) : null}
-                      </div>
-                    </div>
-                  ),
-                }))}
+                    ),
+                  };
+                })}
               />
 
               {selectedModelObj && (
@@ -662,37 +673,21 @@ export default function AdminSettingsPage() {
                   type="info"
                   showIcon
                   message={
-                    <>
-                      <strong>{selectedModelObj.name}</strong> · in{' '}
-                      {formatPrice(selectedModelObj.promptPerM)}/M · out{' '}
-                      {formatPrice(selectedModelObj.completionPerM)}/M ·{' '}
-                      {formatContext(selectedModelObj.contextLength)}
-                    </>
+                    <span>
+                      <strong>{selectedModelObj.name}</strong>
+                      <span style={{ marginLeft: 12, fontFamily: 'monospace', color: 'rgba(255,255,255,0.7)' }}>
+                        {formatPrice(selectedModelObj.promptPerM)} /{' '}
+                        {formatPrice(selectedModelObj.completionPerM)}
+                        {selectedModelObj.contextLength
+                          ? ` · ${formatContext(selectedModelObj.contextLength)}`
+                          : ''}
+                      </span>
+                    </span>
                   }
                   description={
-                    <div>
-                      Estimated cost at ~50k input / 2k output per client:{' '}
-                      <strong>
-                        {selectedModelObj.promptPerM != null && selectedModelObj.completionPerM != null
-                          ? `$${(
-                              (selectedModelObj.promptPerM * 50_000 +
-                                selectedModelObj.completionPerM * 2_000) /
-                              1_000_000
-                            ).toFixed(4)}`
-                          : 'unknown'}
-                      </strong>{' '}
-                      per client · 5,000 clients ≈{' '}
-                      <strong>
-                        {selectedModelObj.promptPerM != null && selectedModelObj.completionPerM != null
-                          ? `$${(
-                              (5_000 *
-                                (selectedModelObj.promptPerM * 50_000 +
-                                  selectedModelObj.completionPerM * 2_000)) /
-                              1_000_000
-                            ).toFixed(2)}`
-                          : 'unknown'}
-                      </strong>
-                    </div>
+                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+                      Prices shown as input / output per million tokens.
+                    </span>
                   }
                 />
               )}
