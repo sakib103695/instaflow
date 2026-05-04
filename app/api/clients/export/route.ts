@@ -15,13 +15,25 @@ export const dynamic = 'force-dynamic';
  *   - unique_url    : the deep link to that client's voice agent
  *   - scrape_status : pending / done / failed
  *
- * The base URL defaults to the request origin, so this works the same
- * locally and in production without configuration.
+ * Resolves the public origin from forwarded headers (nginx sets these),
+ * falling back to the request URL (only useful in local dev).
  */
+function publicBaseFromRequest(request: Request): string {
+  const url = new URL(request.url);
+  const override = url.searchParams.get('base');
+  if (override) return override.replace(/\/$/, '');
+  // X-Forwarded-Host wins because the local request.url reports
+  // 127.0.0.1:3000 when behind nginx.
+  const headers = request.headers;
+  const fwdHost = headers.get('x-forwarded-host') || headers.get('host');
+  const fwdProto = headers.get('x-forwarded-proto') || url.protocol.replace(/:$/, '');
+  if (fwdHost) return `${fwdProto}://${fwdHost}`.replace(/\/$/, '');
+  return `${url.protocol}//${url.host}`.replace(/\/$/, '');
+}
+
 export async function GET(request: Request) {
   try {
-    const url = new URL(request.url);
-    const base = (url.searchParams.get('base') || `${url.protocol}//${url.host}`).replace(/\/$/, '');
+    const base = publicBaseFromRequest(request);
 
     const col = await getClientsCollection();
     const docs = await col.find({}).sort({ createdAt: 1 }).toArray();
