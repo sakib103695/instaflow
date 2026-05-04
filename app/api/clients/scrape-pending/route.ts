@@ -61,18 +61,21 @@ export async function POST() {
       const scrape = await scrapeSite(domain, depth);
       const rawText = scrape.combined;
       if (!rawText || rawText.trim().length < 100) {
+        const error =
+          scrape.error ||
+          'Scraper returned almost no content. The site may block bots or be JavaScript-only — paste content manually from the client edit page.';
         await col.updateOne(
           { slug },
           {
             $set: {
               scrapeStatus: 'failed',
-              scrapeError: scrape.error || 'not enough content',
+              scrapeError: error,
               updatedAt: new Date().toISOString(),
             },
           },
         );
         const remaining = await col.countDocuments({ scrapeStatus: 'pending' });
-        return NextResponse.json({ processed: 1, slug, name, status: 'failed', remaining });
+        return NextResponse.json({ processed: 1, slug, name, status: 'failed', error, remaining });
       }
 
       const structuredContext = await structureContextFromRawText(rawText);
@@ -111,18 +114,19 @@ export async function POST() {
       return NextResponse.json({ processed: 1, slug, name, status: 'done', remaining });
     } catch (err) {
       const reason = err instanceof Error ? err.message : 'scrape failed';
+      const trimmed = reason.slice(0, 500);
       await col.updateOne(
         { slug },
         {
           $set: {
             scrapeStatus: 'failed',
-            scrapeError: reason.slice(0, 500),
+            scrapeError: trimmed,
             updatedAt: new Date().toISOString(),
           },
         },
       );
       const remaining = await col.countDocuments({ scrapeStatus: 'pending' });
-      return NextResponse.json({ processed: 1, slug, name, status: 'failed', remaining });
+      return NextResponse.json({ processed: 1, slug, name, status: 'failed', error: trimmed, remaining });
     }
   } catch (err) {
     console.error('scrape-pending failed', err);

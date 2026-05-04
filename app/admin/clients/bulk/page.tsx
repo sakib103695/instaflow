@@ -216,10 +216,11 @@ export default function BulkClientsPage() {
     try {
       // Polling loop: one client per request keeps each call short and lets
       // the user see live progress.
+      let consecutiveFailures = 0;
       while (!stopRef.current) {
         const res = await fetch('/api/clients/scrape-pending', { method: 'POST' });
         if (!res.ok) {
-          antdMessage.error('Scrape worker error — paused.');
+          antdMessage.error('Scrape worker is unreachable — paused.');
           break;
         }
         const json = await res.json();
@@ -227,6 +228,26 @@ export default function BulkClientsPage() {
         if (json.processed === 0) {
           antdMessage.success('All pending clients processed.');
           break;
+        }
+        if (json.status === 'failed') {
+          consecutiveFailures += 1;
+          antdMessage.error({
+            content: `${json.name}: ${json.error || 'scrape failed'}`,
+            duration: 8,
+          });
+          // If 3 in a row fail with the same root cause (likely a missing key
+          // or revoked credential), pause so the user can fix it instead of
+          // burning through the whole queue.
+          if (consecutiveFailures >= 3) {
+            antdMessage.warning({
+              content:
+                '3 clients in a row failed. Paused so you can fix the underlying issue (likely a missing API key in /admin/settings).',
+              duration: 10,
+            });
+            break;
+          }
+        } else {
+          consecutiveFailures = 0;
         }
       }
     } finally {

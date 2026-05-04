@@ -36,6 +36,13 @@ type Dashboard = {
   voices: { enabled: number };
   recentClients: Array<{ slug: string; name: string; scrapeStatus: string; createdAt: string }>;
   recentFailures: Array<{ slug: string; name: string; scrapeError: string; updatedAt: string }>;
+  health: {
+    llmConfigured: boolean;
+    openrouterKey: boolean;
+    openrouterModel: boolean;
+    geminiKey: boolean;
+    elevenlabsKey: boolean;
+  };
 };
 
 const STATUS_TAG: Record<string, { color: string; label: string }> = {
@@ -84,10 +91,11 @@ export default function AdminDashboardPage() {
     setScraping(true);
     stopRef.current = false;
     try {
+      let consecutiveFailures = 0;
       while (!stopRef.current) {
         const res = await fetch('/api/clients/scrape-pending', { method: 'POST' });
         if (!res.ok) {
-          antdMessage.error('Scrape worker error — paused.');
+          antdMessage.error('Scrape worker is unreachable — paused.');
           break;
         }
         const json = await res.json();
@@ -95,6 +103,23 @@ export default function AdminDashboardPage() {
         if (json.processed === 0) {
           antdMessage.success('All pending clients processed.');
           break;
+        }
+        if (json.status === 'failed') {
+          consecutiveFailures += 1;
+          antdMessage.error({
+            content: `${json.name}: ${json.error || 'scrape failed'}`,
+            duration: 8,
+          });
+          if (consecutiveFailures >= 3) {
+            antdMessage.warning({
+              content:
+                '3 clients in a row failed. Paused so you can fix the underlying issue (likely a missing API key in /admin/settings).',
+              duration: 10,
+            });
+            break;
+          }
+        } else {
+          consecutiveFailures = 0;
         }
       }
     } finally {
@@ -134,6 +159,58 @@ export default function AdminDashboardPage() {
             <Button icon={<ReloadOutlined />} onClick={load}>Refresh</Button>
           </Space>
         </div>
+
+        {/* Health banner — surfaces missing keys before the user wastes a
+            scrape queue and sees every row fail with "no key configured". */}
+        {!data.health.llmConfigured && (
+          <Alert
+            type="error"
+            showIcon
+            icon={<WarningOutlined />}
+            style={{ marginBottom: 16 }}
+            message="Site structuring won't work — no LLM key configured"
+            description={
+              <div>
+                The agent can&apos;t turn scraped websites into structured knowledge until you set
+                either an OpenRouter API key + model (cheaper, recommended) or a Google Gemini
+                API key (fallback). Until then, every new scrape will fail.{' '}
+                <Link href="/admin/settings" style={{ color: '#c4b5fd', fontWeight: 600 }}>
+                  Open Settings →
+                </Link>
+              </div>
+            }
+          />
+        )}
+        {data.health.llmConfigured && data.health.openrouterKey && !data.health.openrouterModel && (
+          <Alert
+            type="warning"
+            showIcon
+            style={{ marginBottom: 16 }}
+            message="OpenRouter key set, but no model picked"
+            description={
+              <div>
+                Until you pick a model in <Link href="/admin/settings" style={{ color: '#c4b5fd' }}>Settings</Link>,
+                scrapes will fall back to direct Gemini (slower / more expensive at scale).
+              </div>
+            }
+          />
+        )}
+        {!data.health.elevenlabsKey && (
+          <Alert
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+            message="No ElevenLabs key — voice library is empty"
+            description={
+              <div>
+                The <Link href="/admin/voices" style={{ color: '#c4b5fd' }}>Voices</Link> page
+                won&apos;t load any voices until you add a key in{' '}
+                <Link href="/admin/settings" style={{ color: '#c4b5fd' }}>Settings</Link>. Clients
+                will fall back to a small hardcoded set.
+              </div>
+            }
+          />
+        )}
 
         {/* Top stat cards */}
         <div

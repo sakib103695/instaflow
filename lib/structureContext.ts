@@ -20,7 +20,11 @@ import { upstreamFetch } from './upstream';
  */
 async function getServerGemini() {
   const key = await resolveSecret('geminiApiKey', 'GEMINI_API_KEY');
-  if (!key) throw new Error('Missing GEMINI_API_KEY. Set it in /admin/settings or as an env var.');
+  if (!key) {
+    throw new Error(
+      'No LLM key configured for site structuring. Open /admin/settings and set either an OpenRouter API key (cheaper) or a Google Gemini API key (fallback).',
+    );
+  }
   return new GoogleGenAI({ apiKey: key });
 }
 
@@ -57,6 +61,19 @@ async function structureViaOpenRouter(rawText: string, model: string, apiKey: st
   });
   if (!res.ok) {
     const text = await res.text();
+    // Translate the most common upstream errors into actionable messages.
+    if (res.status === 401) {
+      throw new Error('OpenRouter rejected the API key (401). Re-check the value in /admin/settings.');
+    }
+    if (res.status === 402) {
+      throw new Error('OpenRouter says your account is out of credit (402). Top up at openrouter.ai.');
+    }
+    if (res.status === 429) {
+      throw new Error('OpenRouter rate-limited the request (429). Wait a moment and re-scrape, or pick a less popular model.');
+    }
+    if (res.status === 404) {
+      throw new Error(`OpenRouter doesn't recognize model "${model}". Pick another model in /admin/settings.`);
+    }
     throw new Error(`OpenRouter ${res.status}: ${text.slice(0, 300)}`);
   }
   const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };

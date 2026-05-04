@@ -62,6 +62,13 @@ export async function GET(request: Request) {
   }
 }
 
+function friendlyElevenLabsError(status: number, body: string): string {
+  if (status === 401) return 'ElevenLabs rejected the API key (401). Update it in /admin/settings.';
+  if (status === 403) return 'ElevenLabs forbade the request (403). The key likely lacks permission.';
+  if (status === 429) return 'ElevenLabs rate-limited the request (429). Wait a moment and retry.';
+  return `ElevenLabs returned ${status}: ${body.slice(0, 200)}`;
+}
+
 async function fetchMyVoices(apiKey: string) {
   const res = await upstreamFetch('https://api.elevenlabs.io/v1/voices', {
     headers: { 'xi-api-key': apiKey, accept: 'application/json' },
@@ -70,7 +77,7 @@ async function fetchMyVoices(apiKey: string) {
   if (!res.ok) {
     const text = await res.text();
     return NextResponse.json(
-      { error: `ElevenLabs returned ${res.status}: ${text.slice(0, 200)}` },
+      { error: friendlyElevenLabsError(res.status, text) },
       { status: 502 },
     );
   }
@@ -108,7 +115,7 @@ async function fetchSharedLibrary(apiKey: string, params: URLSearchParams) {
   if (!res.ok) {
     const text = await res.text();
     return NextResponse.json(
-      { error: `ElevenLabs returned ${res.status}: ${text.slice(0, 200)}` },
+      { error: friendlyElevenLabsError(res.status, text) },
       { status: 502 },
     );
   }

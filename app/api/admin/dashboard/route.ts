@@ -3,7 +3,9 @@ import {
   getClientsCollection,
   getConversationsCollection,
   getVoicesCollection,
+  getSetting,
 } from '@/lib/mongodb';
+import { resolveSecret } from '@/lib/secrets';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -78,6 +80,17 @@ export async function GET() {
     // applied here so dashboard math agrees with the clients list view).
     const done = totalClients - pending - inProgress - failed;
 
+    // Health: which secrets are configured. The dashboard surfaces a banner
+    // when something critical is missing so the user doesn't burn through
+    // a queue only to see every row fail with "no key configured".
+    const [orKey, geminiKey, elevenKey, orModel] = await Promise.all([
+      resolveSecret('openrouterApiKey', 'OPENROUTER_API_KEY'),
+      resolveSecret('geminiApiKey', 'GEMINI_API_KEY'),
+      resolveSecret('elevenlabsApiKey', 'ELEVENLABS_API_KEY'),
+      getSetting<string>('openrouterModel'),
+    ]);
+    const llmConfigured = !!(orKey && orModel?.trim()) || !!geminiKey;
+
     return NextResponse.json({
       clients: { total: totalClients, done, pending, inProgress, failed },
       defaultClient: defaultClient
@@ -97,6 +110,13 @@ export async function GET() {
         scrapeError: c.scrapeError ? String(c.scrapeError) : '',
         updatedAt: c.updatedAt,
       })),
+      health: {
+        llmConfigured,
+        openrouterKey: !!orKey,
+        openrouterModel: !!(orModel && orModel.trim()),
+        geminiKey: !!geminiKey,
+        elevenlabsKey: !!elevenKey,
+      },
     });
   } catch (err) {
     console.error('dashboard endpoint failed', err);
