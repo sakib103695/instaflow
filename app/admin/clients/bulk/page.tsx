@@ -68,6 +68,18 @@ export default function BulkClientsPage() {
     return () => clearInterval(id);
   }, []);
 
+  const downloadTemplate = () => {
+    const sample = [
+      { domain: 'https://glowlift.com', name: 'GlowLift Medspa', languages: 'en' },
+      { domain: 'https://urbancuts.in', name: 'Urban Cuts Barbershop', languages: 'en,hi' },
+      { domain: 'https://example-spa.com', name: '', languages: '' },
+    ];
+    const sheet = XLSX.utils.json_to_sheet(sample);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, sheet, 'clients');
+    XLSX.writeFile(wb, 'instaflow-bulk-template.xlsx');
+  };
+
   /** Parse the dropped/selected xlsx in the browser. */
   const handleFile = (file: File): boolean => {
     // Hard caps to keep the browser from OOMing on a malicious / giant file.
@@ -106,7 +118,22 @@ export default function BulkClientsPage() {
         const langGuess = cols.find((c) => /lang|language/i.test(c));
         if (langGuess) setLanguagesColumn(langGuess);
         setResult(null);
-        antdMessage.success(`Loaded ${json.length} rows.`);
+
+        // Detect if the user accidentally uploaded the *export* file from
+        // /api/clients/export — it has these telltale columns.
+        const looksLikeExport =
+          cols.includes('slug') && cols.includes('unique_url') && cols.includes('scrape_status');
+        if (looksLikeExport) {
+          antdMessage.warning({
+            content:
+              'This looks like an exported file. Re-uploading it would create duplicate clients. Use a fresh file with just a "domain" column.',
+            duration: 8,
+          });
+        } else {
+          antdMessage.success(
+            `Loaded ${json.length} ${json.length === 1 ? 'data row' : 'data rows'} (Excel row 1 was treated as the header).`,
+          );
+        }
       } catch (err) {
         antdMessage.error('Could not parse the spreadsheet.');
         console.error(err);
@@ -194,14 +221,19 @@ export default function BulkClientsPage() {
         styles={{ body: { padding: 24 } }}
       >
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <div>
-            <Title level={3} style={{ marginBottom: 4, color: 'rgba(255,255,255,0.95)' }}>
-              Bulk upload clients
-            </Title>
-            <Text type="secondary">
-              Drop an Excel file, choose which column holds the website domain, and we&apos;ll create one
-              client per row. Scraping runs in the background — you can leave the page and come back.
-            </Text>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <Title level={3} style={{ marginBottom: 4, color: 'rgba(255,255,255,0.95)' }}>
+                Bulk upload clients
+              </Title>
+              <Text type="secondary">
+                Drop an Excel/CSV file. The first row is the header. Each remaining row becomes one
+                client. Scraping runs in the background.
+              </Text>
+            </div>
+            <Button icon={<DownloadOutlined />} onClick={downloadTemplate}>
+              Download template
+            </Button>
           </div>
 
           <Dragger
