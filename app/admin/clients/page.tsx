@@ -17,6 +17,17 @@ type ClientRow = {
   isDefault?: boolean;
   createdAt: string;
   updatedAt: string;
+  scrapeStatus: 'pending' | 'in_progress' | 'done' | 'failed';
+  scrapeError?: string;
+  scrapedAt?: string | null;
+  pagesScraped?: number;
+};
+
+const STATUS_META: Record<string, { color: string; label: string }> = {
+  done: { color: 'green', label: 'Ready' },
+  pending: { color: 'gold', label: 'Pending scrape' },
+  in_progress: { color: 'blue', label: 'Scraping…' },
+  failed: { color: 'red', label: 'Scrape failed' },
 };
 
 export default function AdminClientsPage() {
@@ -85,6 +96,19 @@ export default function AdminClientsPage() {
       ),
     },
     { title: 'Domain', dataIndex: 'domain', key: 'domain' },
+    {
+      title: 'Status',
+      key: 'scrapeStatus',
+      width: 150,
+      render: (_: unknown, row: ClientRow) => {
+        const meta = STATUS_META[row.scrapeStatus] ?? STATUS_META.done;
+        const tag = <Tag color={meta.color} style={{ margin: 0 }}>{meta.label}</Tag>;
+        if (row.scrapeStatus === 'failed' && row.scrapeError) {
+          return <Tooltip title={row.scrapeError}>{tag}</Tooltip>;
+        }
+        return tag;
+      },
+    },
     {
       title: 'Agent',
       key: 'public',

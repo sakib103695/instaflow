@@ -95,9 +95,40 @@ export default function BulkClientsPage() {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const wb = XLSX.read(data, { type: 'array' });
         const firstSheet = wb.Sheets[wb.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json<ParsedRow>(firstSheet, { defval: '' });
-        if (json.length === 0) {
+
+        // Robust row parsing: read as 2D array first (which never silently
+        // drops rows the way sheet_to_json's heuristics can), then map to
+        // objects using the first non-empty row as the header. This avoids
+        // the "I had 2 data rows but only 1 was loaded" issue caused by
+        // weird `!ref` values, blank-looking rows, or merged cells.
+        const matrix = XLSX.utils.sheet_to_json<unknown[]>(firstSheet, {
+          header: 1,
+          defval: '',
+          blankrows: false,
+          raw: false,
+        });
+        if (!matrix.length) {
           antdMessage.error('Spreadsheet is empty.');
+          return;
+        }
+        const headerRow = (matrix[0] || []).map((v) => String(v ?? '').trim());
+        const cleanedHeaders = headerRow.map((h, i) => h || `col_${i + 1}`);
+        const json: ParsedRow[] = [];
+        for (let r = 1; r < matrix.length; r++) {
+          const row = matrix[r] || [];
+          const obj: ParsedRow = {};
+          let hasAny = false;
+          for (let c = 0; c < cleanedHeaders.length; c++) {
+            const value = row[c] ?? '';
+            const text = typeof value === 'string' ? value : String(value);
+            obj[cleanedHeaders[c]] = text;
+            if (text.trim()) hasAny = true;
+          }
+          if (hasAny) json.push(obj);
+        }
+
+        if (json.length === 0) {
+          antdMessage.error('Spreadsheet has a header but no data rows.');
           return;
         }
         if (json.length > MAX_ROWS) {
@@ -164,8 +195,14 @@ export default function BulkClientsPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Upload failed');
       setResult(json);
-      antdMessage.success(`Created ${json.created} clients.`);
+      antdMessage.success(`Created ${json.created} clients. Starting scrape…`);
       await refreshStatus();
+      // Start scraping automatically — without this users had to remember to
+      // click "Scrape pending" as a separate step, which made it look like
+      // upload had silently done nothing.
+      if (json.created > 0) {
+        await startScraping();
+      }
     } catch (err) {
       antdMessage.error(err instanceof Error ? err.message : 'Upload failed');
     } finally {

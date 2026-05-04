@@ -12,6 +12,7 @@ import {
   PlusOutlined,
   UploadOutlined,
   SettingOutlined,
+  DashboardOutlined,
 } from '@ant-design/icons';
 import { APP_CONFIG } from '@/constants';
 
@@ -56,6 +57,7 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
+  { key: '/admin/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
   {
     key: 'group:clients',
     icon: <TeamOutlined />,
@@ -90,7 +92,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const selectedKey =
     leafKeys
       .filter((k) => pathname === k || pathname.startsWith(k + '/'))
-      .sort((a, b) => b.length - a.length)[0] ?? '/admin/clients';
+      .sort((a, b) => b.length - a.length)[0] ?? '/admin/dashboard';
   const openKeys = NAV_ITEMS.filter((i) =>
     i.children?.some((c) => pathname === c.key || pathname.startsWith(c.key + '/')),
   ).map((i) => i.key);

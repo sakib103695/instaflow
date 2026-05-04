@@ -22,6 +22,10 @@ export async function GET() {
             isDefault: 1,
             createdAt: 1,
             updatedAt: 1,
+            scrapeStatus: 1,
+            scrapeError: 1,
+            'scrapeMeta.scrapedAt': 1,
+            'scrapeMeta.pagesScraped': 1,
             'structuredContext.business.name': 1,
           },
         },
@@ -39,6 +43,12 @@ export async function GET() {
         isDefault: !!d.isDefault,
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,
+        // Legacy clients (created before scrapeStatus existed) report as
+        // 'done' so they don't sit forever in the "pending" bucket.
+        scrapeStatus: (d.scrapeStatus as string) ?? 'done',
+        scrapeError: (d.scrapeError as string) ?? '',
+        scrapedAt: d.scrapeMeta?.scrapedAt ?? null,
+        pagesScraped: d.scrapeMeta?.pagesScraped ?? 0,
       })),
     );
   } catch (err) {
