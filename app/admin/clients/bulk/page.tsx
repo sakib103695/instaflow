@@ -61,6 +61,11 @@ export default function BulkClientsPage() {
 
   useEffect(() => {
     refreshStatus();
+    // Auto-refresh every 10s. Each call also heals any rows stuck in
+    // `in_progress` server-side, so leaving the page open is enough to
+    // unblock a queue that froze when a previous tab was closed.
+    const id = setInterval(refreshStatus, 10_000);
+    return () => clearInterval(id);
   }, []);
 
   /** Parse the dropped/selected xlsx in the browser. */
