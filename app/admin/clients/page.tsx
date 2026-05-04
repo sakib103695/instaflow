@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Table, Card, Typography, Button, Space, Skeleton, Popconfirm, message, Tag, Tooltip } from 'antd';
-import { PlayCircleOutlined, CopyOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, CopyOutlined, ReloadOutlined, DeleteOutlined } from '@ant-design/icons';
 import { APP_CONFIG } from '@/constants';
 
 const { Title, Text } = Typography;
@@ -33,6 +33,9 @@ const STATUS_META: Record<string, { color: string; label: string }> = {
 export default function AdminClientsPage() {
   const [data, setData] = useState<ClientRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkScraping, setBulkScraping] = useState(false);
   const router = useRouter();
 
   async function load() {
@@ -74,6 +77,93 @@ export default function AdminClientsPage() {
       load();
     } else {
       message.error('Failed to set default');
+    }
+  }
+
+  /**
+   * Run a polling scrape loop just like the bulk page / dashboard so
+   * the user gets live progress + per-row error toasts after triggering
+   * a re-scrape on selected rows.
+   */
+  async function runScrapeLoop() {
+    setBulkScraping(true);
+    let consecutiveFailures = 0;
+    try {
+      while (true) {
+        const res = await fetch('/api/clients/scrape-pending', { method: 'POST' });
+        if (!res.ok) {
+          message.error('Scrape worker unreachable — paused.');
+          break;
+        }
+        const json = await res.json();
+        await load();
+        if (json.processed === 0) {
+          message.success('All pending clients processed.');
+          break;
+        }
+        if (json.status === 'failed') {
+          consecutiveFailures += 1;
+          message.error({
+            content: `${json.name}: ${json.error || 'scrape failed'}`,
+            duration: 8,
+          });
+          if (consecutiveFailures >= 3) {
+            message.warning({
+              content:
+                '3 in a row failed. Paused — likely a missing API key in /admin/settings.',
+              duration: 10,
+            });
+            break;
+          }
+        } else {
+          consecutiveFailures = 0;
+        }
+      }
+    } finally {
+      setBulkScraping(false);
+    }
+  }
+
+  async function bulkRescrape() {
+    if (selectedKeys.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const res = await fetch('/api/clients/bulk-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slugs: selectedKeys, action: 'rescrape' }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      message.success(`Re-queued ${json.requeued} client${json.requeued === 1 ? '' : 's'}. Scraping…`);
+      setSelectedKeys([]);
+      await load();
+      await runScrapeLoop();
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Re-scrape failed');
+    } finally {
+      setBulkBusy(false);
+    }
+  }
+
+  async function bulkDelete() {
+    if (selectedKeys.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const res = await fetch('/api/clients/bulk-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slugs: selectedKeys, action: 'delete' }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      message.success(`Deleted ${json.deleted} client${json.deleted === 1 ? '' : 's'}.`);
+      setSelectedKeys([]);
+      await load();
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Delete failed');
+    } finally {
+      setBulkBusy(false);
     }
   }
 
@@ -208,7 +298,84 @@ export default function AdminClientsPage() {
             {loading ? (
               <Skeleton active paragraph={{ rows: 6 }} />
             ) : (
-              <Table rowKey="slug" columns={columns} dataSource={data} pagination={{ pageSize: 20 }} />
+              <>
+                {selectedKeys.length > 0 && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 12,
+                      padding: '10px 14px',
+                      background: 'rgba(124, 58, 237, 0.15)',
+                      border: '1px solid rgba(124, 58, 237, 0.45)',
+                      borderRadius: 8,
+                    }}
+                  >
+                    <Text style={{ color: 'rgba(255,255,255,0.9)' }}>
+                      {selectedKeys.length} selected
+                    </Text>
+                    <Space wrap>
+                      <Button
+                        icon={<ReloadOutlined />}
+                        loading={bulkBusy || bulkScraping}
+                        onClick={bulkRescrape}
+                      >
+                        Re-scrape selected
+                      </Button>
+                      <Popconfirm
+                        title={`Delete ${selectedKeys.length} client${selectedKeys.length === 1 ? '' : 's'}?`}
+                        okText="Delete"
+                        okButtonProps={{ danger: true }}
+                        onConfirm={bulkDelete}
+                      >
+                        <Button danger icon={<DeleteOutlined />} loading={bulkBusy}>
+                          Delete selected
+                        </Button>
+                      </Popconfirm>
+                      <Button onClick={() => setSelectedKeys([])}>Clear</Button>
+                    </Space>
+                  </div>
+                )}
+                <Table
+                  rowKey="slug"
+                  columns={columns}
+                  dataSource={data}
+                  pagination={{ pageSize: 20 }}
+                  rowSelection={{
+                    selectedRowKeys: selectedKeys,
+                    onChange: setSelectedKeys,
+                    // Quick "select only failed" preset — exactly the use
+                    // case the user described: re-scrape just the failures
+                    // without picking through the table by hand.
+                    selections: [
+                      {
+                        key: 'failed',
+                        text: 'Select failed only',
+                        onSelect: () => {
+                          setSelectedKeys(
+                            data.filter((d) => d.scrapeStatus === 'failed').map((d) => d.slug),
+                          );
+                        },
+                      },
+                      {
+                        key: 'pending',
+                        text: 'Select pending + failed',
+                        onSelect: () => {
+                          setSelectedKeys(
+                            data
+                              .filter((d) => d.scrapeStatus === 'pending' || d.scrapeStatus === 'failed')
+                              .map((d) => d.slug),
+                          );
+                        },
+                      },
+                      Table.SELECTION_ALL,
+                      Table.SELECTION_INVERT,
+                      Table.SELECTION_NONE,
+                    ],
+                  }}
+                />
+              </>
             )}
           </Space>
         </Card>
