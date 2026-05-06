@@ -91,7 +91,8 @@ export default function AdminDashboardPage() {
     setScraping(true);
     stopRef.current = false;
     try {
-      let consecutiveFailures = 0;
+      let processed = 0;
+      let failed = 0;
       while (!stopRef.current) {
         const res = await fetch('/api/clients/scrape-pending', { method: 'POST' });
         if (!res.ok) {
@@ -101,25 +102,20 @@ export default function AdminDashboardPage() {
         const json = await res.json();
         await load();
         if (json.processed === 0) {
-          antdMessage.success('All pending clients processed.');
+          antdMessage.success(
+            failed > 0
+              ? `Done. ${processed - failed} succeeded, ${failed} failed.`
+              : 'All pending clients processed.',
+          );
           break;
         }
+        processed += 1;
         if (json.status === 'failed') {
-          consecutiveFailures += 1;
+          failed += 1;
           antdMessage.error({
             content: `${json.name}: ${json.error || 'scrape failed'}`,
-            duration: 8,
+            duration: 6,
           });
-          if (consecutiveFailures >= 3) {
-            antdMessage.warning({
-              content:
-                '3 clients in a row failed. Paused so you can fix the underlying issue (likely a missing API key in /admin/settings).',
-              duration: 10,
-            });
-            break;
-          }
-        } else {
-          consecutiveFailures = 0;
         }
       }
     } finally {
